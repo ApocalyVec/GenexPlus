@@ -2,6 +2,8 @@ import shutil
 from pyspark import SparkContext
 import os
 
+from cluster_operations import clusterer
+
 
 def strip_function(x):
     """
@@ -59,6 +61,8 @@ def generateSource(file, features_to_append):
     """
     # List of result
     res = []
+    # dict to be broadcasted
+    myDict = dict()
     wrap_in_parantheses = lambda x: "(" + str(x) + ")"
 
     with open(file, 'r') as f:
@@ -79,8 +83,12 @@ def generateSource(file, features_to_append):
 
                 series_data = data[len(features):]
                 res.append([series_label, series_data])
-    return res
+                myDict[series_label] = series_data
+    return res, myDict
 
+
+#Similarity Threshold
+st = 0.1
 
 if __name__ == '__main__':
     # TODO
@@ -100,7 +108,9 @@ if __name__ == '__main__':
 
     features_to_append = [0, 1, 2, 3, 4]
 
-    res_list = generateSource(file, features_to_append)[1:]
+    # res_list: list of raw time series data to be on distributed
+    # timeSeries: a dictionary version of as res_list, used for sebsequence look up
+    res_list, timeSeries = generateSource(file, features_to_append)
     # TODO
     # add clustering method after grouping
 
@@ -112,7 +122,18 @@ if __name__ == '__main__':
     global_dict_rdd = sc.parallelize(res_list).cache()
     # finish grouping here, result in a key, value pair where
     # key is the length of sub-sequence, value is the [id of source time series, start_point, end_point]
+    # res_rdd = global_dict_rdd.flatMap(lambda x: get_all_subsquences(x)).collect()
     res_rdd = global_dict_rdd.flatMap(lambda x: get_all_subsquences(x)).map(lambda x: (x[0], [x[1:]])).reduceByKey(
         lambda a, b: a + b).collect()
 
-    print("done")
+    print("grouping done")
+
+    print("Working on clustering")
+    # # TODO Can we do this without broadcasting.
+    # global_clusters = sc.broadcast(res_rdd).cache()
+    #
+    # # TODO here clusterer x[1] is all the sub-sequences of len x[0], but x[1] is actually the index of seb-sequebces: [id, start, end]
+    # cluster_rdd = global_clusters.flatMap(lambda x: clusterer(x[1], x[0], st)).collect()
+
+
+
