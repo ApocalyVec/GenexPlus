@@ -1,15 +1,13 @@
 import math
 import random
-
 from fastdtw import fastdtw
 from scipy.spatial.distance import euclidean
-
-from data_operations import get_data
-
 from data_operations import get_data
 
 # grouping -> subsequence
 # clustering -> clustered subsequence
+from time_series_obj import time_series_obj
+
 
 def randomize(arr):
     """
@@ -87,42 +85,73 @@ def clusterer(group, length, st, time_series_dict):
     cluster = dict()
 
     # get all seubsequences from time_series_dict
+    # at one time
+    # ???or maybe during group operation
+    # During group operation is better, because the data will be too large if
+    # we retrieve all of it
+    print(length)
     ssequences = []
     for g in group:
-        ssequences.append(time_series_dict[g[0]][g[1]:g[2]])
+        id = g[0]
+        start_point = g[1]
+        end_point = g[2]
+        ssequences.append(time_series_obj(id, start_point,end_point, None))
 
     # group length validation
 
 
-    for ss in ssequences:
-        if len(ss) != length:
+    for time_series in ssequences:
+        # end_point and start_point
+        if time_series.end_point - time_series.start_point != length:
             raise Exception("cluster_operations: clusterer: group length dismatch, len = " + str(length))
 
     # randomize the sequence in the group to remove data-related bias
     ssequences = randomize(ssequences)
 
+    delimiter = '_'
     for ss in ssequences:
-        if not cluster.keys():  # if there is no item in the similarity cluster
-            cluster[ss] = [ss]  # put the first sequence as the representative of the first cluster
+        count = 1
+        ss.set_raw_data(get_data(ss.id, ss.start_point, ss.end_point, time_series_dict))
+        if not cluster.keys(): 
+            # if there is no item in the similarity cluster
+            # future delimiter
+            group_id = str(length) + delimiter + str(count)
+            ss.set_group_represented(group_id)
+            cluster[ss] = [ss]
+            count += 1
+            # put the first sequence as the representative of the first cluster
         else:
             minSim = math.inf
             minRprst = None  # TODO MinRprst should not be None, catch None exception!
-
-            for rprst in cluster.keys():  # iterate though all the similarity groups, rprst = representative
-                dist = sim_between_seq(ss, rprst)
+            # rprst is a time_series obj
+            for rprst in list(cluster.keys()):  # iterate though all the similarity groups, rprst = representative
+                # ss is also a time_series obj
+                ss_raw_data = ss.get_raw_data()
+                rprst_raw_data = rprst.get_raw_data()
+                dist = sim_between_seq(ss_raw_data, rprst_raw_data)[0]
+                # print('dist is' + str(dist))
+                # print('minSim is' + str(minSim))
+                #
                 if dist < minSim:
                     minSim = dist
                     minRprst = rprst
                 if minSim <= math.sqrt(length) * st / 2:  # if the calculated min similarity is smaller than the
                     # similarity threshold, put subsequence in the similarity cluster keyed by the min representative
                     cluster[minRprst].append(ss)
-                else:  # if the minSim is greater than the similarity threshold, we create a new similarity group
+                else:
+                    # if the minSim is greater than the similarity threshold, we create a new similarity group
                     # with this sequence being its representative
-                    if ss in cluster.keys():
-                        raise Exception('cluster_operations: clusterer_legacy: Trying to create new similarity cluster '
-                                        'due to exceeding similarity threshold, target sequence is already a '
-                                        'representative(key) in cluster. The sequence isz: ' + str(ss))
-                    cluster[ss] = [ss]
+                    # if ss in cluster.keys():
+                    #     # should skip
+                    #     continue
+                    #     # raise Exception('cluster_operations: clusterer: Trying to create new similarity cluster '
+                    #     #                 'due to exceeding similarity threshold, target sequence is already a '
+                    #     #                 'representative(key) in cluster. The sequence isz: ' + ss.toString())
+                    if ss not in cluster.keys():
+                        cluster[ss] = [].append(ss)
+                        group_id = str(length) + delimiter + str(count)
+                        ss.set_group_represented(group_id)
+                        count += 1
 
     return cluster
 

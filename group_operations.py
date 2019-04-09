@@ -124,7 +124,7 @@ if __name__ == '__main__':
     # key is the length of sub-sequence, value is the [id of source time series, start_point, end_point]
     # res_rdd = global_dict_rdd.flatMap(lambda x: get_all_subsquences(x)).collect()
     group_rdd = global_dict_rdd.flatMap(lambda x: get_all_subsquences(x)).map(lambda x: (x[0], [x[1:]])).reduceByKey(
-        lambda a, b: a + b)
+        lambda a, b: a + b).map(lambda x: clusterer(x[1], x[0], st, global_dict.value)).collect()
 
     print("grouping done")
     print("Working on clustering")
