@@ -105,7 +105,7 @@ if __name__ == '__main__':
         shutil.rmtree(path_save_res)
     #TODO
     file = '/Users/Leo/Documents/OneDrive/COLLEGE/COURSES/research/genex/genexPlus/2013e_001_2_channels_02backs.csv'
-
+    # add test for commit
     features_to_append = [0, 1, 2, 3, 4]
 
     # res_list: list of raw time series data to be on distributed
