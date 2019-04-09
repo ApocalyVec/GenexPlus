@@ -1,4 +1,4 @@
-def get_data(id, start, end, timeSeries):
+def get_data(id, start, end, time_series_dict):
     """
 
     :param id:
@@ -9,7 +9,8 @@ def get_data(id, start, end, timeSeries):
     :return list: return a sub-sequence indexed by id, start point and end point in data
     """
     # TODO should we make timeSeries a dic as well as a list (for distributed computing)
-    for sequence in timeSeries:
-        if id == sequence[0]:  # if the id matches
-            return sequence[start:end]
-    raise Exception("data_operations: get_data: subsequnce of ID " + id + " not found in TimeSeries!")
+
+    if id not in time_series_dict.keys():
+        raise Exception("data_operations: get_data: subsequnce of ID " + id + " not found in TimeSeries!")
+    else:
+        return time_series_dict[id][start:end]

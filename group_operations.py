@@ -110,30 +110,30 @@ if __name__ == '__main__':
 
     # res_list: list of raw time series data to be on distributed
     # timeSeries: a dictionary version of as res_list, used for sebsequence look up
-    res_list, timeSeries = generateSource(file, features_to_append)
+    res_list, time_series_dict = generateSource(file, features_to_append)
     # TODO
     # add clustering method after grouping
 
     # this broadcast object can be accessed from all nodes in computer cluster
     # in order to access the value this, just use val = global_dict.value
     # for future reading data
-    global_dict = sc.broadcast(res_list)
+    global_dict = sc.broadcast(time_series_dict)
 
-    global_dict_rdd = sc.parallelize(res_list).cache()
+    global_dict_rdd = sc.parallelize(res_list[1:]).cache()
     # finish grouping here, result in a key, value pair where
     # key is the length of sub-sequence, value is the [id of source time series, start_point, end_point]
     # res_rdd = global_dict_rdd.flatMap(lambda x: get_all_subsquences(x)).collect()
-    res_rdd = global_dict_rdd.flatMap(lambda x: get_all_subsquences(x)).map(lambda x: (x[0], [x[1:]])).reduceByKey(
-        lambda a, b: a + b).collect()
+    group_rdd = global_dict_rdd.flatMap(lambda x: get_all_subsquences(x)).map(lambda x: (x[0], [x[1:]])).reduceByKey(
+        lambda a, b: a + b)
 
     print("grouping done")
-
     print("Working on clustering")
-    # # TODO Can we do this without broadcasting.
-    # global_clusters = sc.broadcast(res_rdd).cache()
-    #
-    # # TODO here clusterer x[1] is all the sub-sequences of len x[0], but x[1] is actually the index of seb-sequebces: [id, start, end]
-    # cluster_rdd = global_clusters.flatMap(lambda x: clusterer(x[1], x[0], st)).collect()
+
+    cluster_rdd = group_rdd.flatMap(lambda x: clusterer(x[1], x[0], st, global_dict.value)).collect()
+    print("clustering done")
+    # TODO Can we do this without broadcasting.
+
+    # TODO here clusterer x[1] is all the sub-sequences of len x[0], but x[1] is actually the index of seb-sequebces: [id, start, end]
 
 
 

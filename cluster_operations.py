@@ -6,6 +6,8 @@ from scipy.spatial.distance import euclidean
 
 from data_operations import get_data
 
+from data_operations import get_data
+
 # grouping -> subsequence
 # clustering -> clustered subsequence
 
@@ -70,50 +72,57 @@ def clusterer_legacy(groups, st):
                     clusters[sequence] = [sequence]
 
 
-def clusterer(group, length, st):
+def clusterer(group, length, st, time_series_dict):
     """
     all subsequence in 'group' must be of the same length
     For example:
     [[1,4,2],[6,1,4],[1,2,3],[3,2,1]] is a valid 'subsequences'
 
-    :param list of list group:
+    :param list of list group: [[id, start, end], ...]
     :param int length:
     :param float st:
     
     :return dic cluster
     """
-    cluster = []
+    cluster = dict()
+
+    # get all seubsequences from time_series_dict
+    ssequences = []
+    for g in group:
+        ssequences.append(time_series_dict[g[0]][g[1]:g[2]])
 
     # group length validation
-    for ssequence in group:
-        if length(ssequence) != length:
+
+
+    for ss in ssequences:
+        if len(ss) != length:
             raise Exception("cluster_operations: clusterer: group length dismatch, len = " + str(length))
 
     # randomize the sequence in the group to remove data-related bias
-    group = randomize(group)
+    ssequences = randomize(ssequences)
 
-    for ssequence in group:
+    for ss in ssequences:
         if not cluster.keys():  # if there is no item in the similarity cluster
-            cluster[ssequence] = [ssequence]  # put the first sequence as the representative of the first cluster
+            cluster[ss] = [ss]  # put the first sequence as the representative of the first cluster
         else:
             minSim = math.inf
             minRprst = None  # TODO MinRprst should not be None, catch None exception!
 
             for rprst in cluster.keys():  # iterate though all the similarity groups, rprst = representative
-                dist = sim_between_seq(ssequence, rprst)
+                dist = sim_between_seq(ss, rprst)
                 if dist < minSim:
                     minSim = dist
                     minRprst = rprst
                 if minSim <= math.sqrt(length) * st / 2:  # if the calculated min similarity is smaller than the
                     # similarity threshold, put subsequence in the similarity cluster keyed by the min representative
-                    cluster[minRprst].append(ssequence)
+                    cluster[minRprst].append(ss)
                 else:  # if the minSim is greater than the similarity threshold, we create a new similarity group
                     # with this sequence being its representative
-                    if ssequence in cluster.keys():
+                    if ss in cluster.keys():
                         raise Exception('cluster_operations: clusterer_legacy: Trying to create new similarity cluster '
                                         'due to exceeding similarity threshold, target sequence is already a '
-                                        'representative(key) in cluster. The sequence isz: ' + str(ssequence))
-                    cluster[ssequence] = [ssequence]
+                                        'representative(key) in cluster. The sequence isz: ' + str(ss))
+                    cluster[ss] = [ss]
 
     return cluster
 
