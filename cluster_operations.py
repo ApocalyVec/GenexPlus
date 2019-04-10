@@ -3,10 +3,10 @@ import random
 from fastdtw import fastdtw
 from scipy.spatial.distance import euclidean
 from data_operations import get_data
-import numpy as np
+
 # grouping -> subsequence
 # clustering -> clustered subsequence
-from time_series_obj import TimeSeriesObj
+from time_series_obj import time_series_obj
 
 
 def randomize(arr):
@@ -18,7 +18,7 @@ def randomize(arr):
     """
     for i in range(len(arr) - 1, 0, -1):
         # Pick a random index from 0 to i
-        j = random.randint(0, i)
+        j = random.randint(0, i + 1)
 
         # Swap arr[i] with the element at random index
         arr[i], arr[j] = arr[j], arr[i]
@@ -70,18 +70,17 @@ def clusterer_legacy(groups, st):
                     clusters[sequence] = [sequence]
 
 
-def cluster(group, length, st, time_series_dict):
+def clusterer(group, length, st, time_series_dict):
     """
     all subsequence in 'group' must be of the same length
     For example:
-    [[1,4,2],[6,1,4],[1,2,3],[3,2,1]] is a valid 'sub-sequences'
+    [[1,4,2],[6,1,4],[1,2,3],[3,2,1]] is a valid 'subsequences'
 
     :param list of list group: [[id, start, end], ...]
-    :param int length: the length of the group to be clustered
-    :param float st: similarity threshold to determine whether a sub-sequence
-    belongs to a group
+    :param int length:
+    :param float st:
     
-    :return a dictionary of clusters
+    :return dic cluster
     """
     cluster = dict()
 
@@ -93,12 +92,14 @@ def cluster(group, length, st, time_series_dict):
     print(length)
     ssequences = []
     for g in group:
-        tid = g[0]
+        id = g[0]
         start_point = g[1]
         end_point = g[2]
-        ssequences.append(TimeSeriesObj(tid, start_point, end_point))
+        ssequences.append(time_series_obj(id, start_point,end_point, None))
 
     # group length validation
+
+
     for time_series in ssequences:
         # end_point and start_point
         if time_series.end_point - time_series.start_point != length:
@@ -108,9 +109,8 @@ def cluster(group, length, st, time_series_dict):
     ssequences = randomize(ssequences)
 
     delimiter = '_'
-    count = 1
     for ss in ssequences:
-        print(count)
+        count = 1
         ss.set_raw_data(get_data(ss.id, ss.start_point, ss.end_point, time_series_dict))
         if not cluster.keys(): 
             # if there is no item in the similarity cluster
@@ -118,7 +118,6 @@ def cluster(group, length, st, time_series_dict):
             group_id = str(length) + delimiter + str(count)
             ss.set_group_represented(group_id)
             cluster[ss] = [ss]
-            ss.set_representative()
             count += 1
             # put the first sequence as the representative of the first cluster
         else:
@@ -129,11 +128,7 @@ def cluster(group, length, st, time_series_dict):
                 # ss is also a time_series obj
                 ss_raw_data = ss.get_raw_data()
                 rprst_raw_data = rprst.get_raw_data()
-                # print(type(ss_raw_data))
-                # print(ss_raw_data)
-                # print(rprst_raw_data)
-                dist = euclidean(np.asarray(ss_raw_data), np.asarray(rprst_raw_data))
-                # dist = sim_between_seq(ss_raw_data, rprst_raw_data)[0]
+                dist = sim_between_seq(ss_raw_data, rprst_raw_data)[0]
                 # print('dist is' + str(dist))
                 # print('minSim is' + str(minSim))
                 #
@@ -156,7 +151,6 @@ def cluster(group, length, st, time_series_dict):
                         cluster[ss] = [].append(ss)
                         group_id = str(length) + delimiter + str(count)
                         ss.set_group_represented(group_id)
-                        ss.set_representative()
                         count += 1
 
     return cluster

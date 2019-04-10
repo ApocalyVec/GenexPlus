@@ -2,7 +2,7 @@ import shutil
 from pyspark import SparkContext
 import os
 
-from cluster_operations import cluster
+from cluster_operations import clusterer
 
 
 def strip_function(x):
@@ -41,7 +41,7 @@ def get_all_subsquences(list):
     val = []
     # in reality, start is 0, end is len(list)
     start = 10
-    end = 15
+    end = 20
     for i in range(start, end):
         for j in range(0, i):
             val.append([i - j, id, j, i])
@@ -81,7 +81,7 @@ def generateSource(file, features_to_append):
                 label_features = [wrap_in_parantheses(data[index]) for index in range(0, len(label_features_index) - 1)]
                 series_label = "_".join(label_features).replace('  ', '-').replace(' ', '-')
 
-                series_data = list(map(float, data[len(features):]))
+                series_data = data[len(features):]
                 res.append([series_label, series_data])
                 myDict[series_label] = series_data
     return res, myDict
@@ -92,24 +92,20 @@ st = 0.1
 
 if __name__ == '__main__':
     # TODO
-    Yu_path = ['/Library/Java/JavaVirtualMachines/jdk1.8.0_171.jdk/Contents/Home',
-               '/Users/yli14/BrainWave/GenexPlus/txt',
-               '/Users/yli14/Desktop/DatasetBrainWave/2013e_001_2_channels_02backs.csv']
-    Leo_path = ['/Library/Java/JavaVirtualMachines/jdk1.8.0_151.jdk/Contents/Home',
-                '/Users/Leo/Documents/OneDrive/COLLEGE/COURSES/research/genex/genexPlus/test/txt',
-                '/Users/Leo/Documents/OneDrive/COLLEGE/COURSES/research/genex/genexPlus/2013e_001_2_channels_02backs.csv']
-    path = Yu_path
-    os.environ['JAVA_HOME'] = path[0]
+    # path_java_home = '/Library/Java/JavaVirtualMachines/jdk1.8.0_171.jdk/Contents/Home'
+    path_java_home = '/Library/Java/JavaVirtualMachines/jdk1.8.0_151.jdk/Contents/Home'
+
+    os.environ['JAVA_HOME'] = path_java_home
     # create a spark job
     sc = SparkContext("local", "First App")
     # TODO
-    path_save_res = path[1]
+    path_save_res = '/Users/Leo/Documents/OneDrive/COLLEGE/COURSES/research/genex/genexPlus/test/txt'
     # if path exist, the job can't be executed
     if os.path.isdir(path_save_res):
         shutil.rmtree(path_save_res)
     #TODO
-    file = path[2]
-    # add test for commit
+    file = '/Users/Leo/Documents/OneDrive/COLLEGE/COURSES/research/genex/genexPlus/2013e_001_2_channels_02backs.csv'
+
     features_to_append = [0, 1, 2, 3, 4]
 
     # res_list: list of raw time series data to be on distributed
@@ -128,12 +124,12 @@ if __name__ == '__main__':
     # key is the length of sub-sequence, value is the [id of source time series, start_point, end_point]
     # res_rdd = global_dict_rdd.flatMap(lambda x: get_all_subsquences(x)).collect()
     group_rdd = global_dict_rdd.flatMap(lambda x: get_all_subsquences(x)).map(lambda x: (x[0], [x[1:]])).reduceByKey(
-        lambda a, b: a + b)
-    # group_res = group_rdd.collect()
+        lambda a, b: a + b).map(lambda x: clusterer(x[1], x[0], st, global_dict.value)).collect()
+
     print("grouping done")
     print("Working on clustering")
 
-    cluster_rdd = group_rdd.map(lambda x: cluster(x[1], x[0], st, global_dict.value)).collect()
+    cluster_rdd = group_rdd.flatMap(lambda x: clusterer(x[1], x[0], st, global_dict.value)).collect()
     print("clustering done")
     # TODO Can we do this without broadcasting.
 
