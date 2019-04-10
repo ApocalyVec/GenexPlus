@@ -2,7 +2,7 @@ import shutil
 from pyspark import SparkContext
 import os
 
-from cluster_operations import clusterer
+from cluster_operations import cluster
 
 
 def strip_function(x):
@@ -133,7 +133,7 @@ if __name__ == '__main__':
     print("grouping done")
     print("Working on clustering")
 
-    cluster_rdd = group_rdd.map(lambda x: clusterer(x[1], x[0], st, global_dict.value)).collect()
+    cluster_rdd = group_rdd.map(lambda x: cluster(x[1], x[0], st, global_dict.value)).collect()
     print("clustering done")
     # TODO Can we do this without broadcasting.
 

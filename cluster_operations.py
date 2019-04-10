@@ -18,7 +18,7 @@ def randomize(arr):
     """
     for i in range(len(arr) - 1, 0, -1):
         # Pick a random index from 0 to i
-        j = random.randint(0, i + 1)
+        j = random.randint(0, i)
 
         # Swap arr[i] with the element at random index
         arr[i], arr[j] = arr[j], arr[i]
@@ -118,7 +118,7 @@ def cluster(group, length, st, time_series_dict):
             group_id = str(length) + delimiter + str(count)
             ss.set_group_represented(group_id)
             cluster[ss] = [ss]
-            ss.set = True
+            ss.set_representative()
             count += 1
             # put the first sequence as the representative of the first cluster
         else:
@@ -156,6 +156,7 @@ def cluster(group, length, st, time_series_dict):
                         cluster[ss] = [].append(ss)
                         group_id = str(length) + delimiter + str(count)
                         ss.set_group_represented(group_id)
+                        ss.set_representative()
                         count += 1
 
     return cluster

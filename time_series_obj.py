@@ -20,7 +20,7 @@ class TimeSeriesObj:
     def get_raw_data(self):
         return self.raw_data
 
-    def set_resentative(self):
+    def set_representative(self):
         self.is_representative = True
 
     def remove_representative(self):
