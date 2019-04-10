@@ -1,18 +1,18 @@
-class time_series_obj:
-    def __init__(self, id, start_point, end_point, raw_data, group_represented = None):
-        self.id = id
+class TimeSeriesObj:
+    def __init__(self, tid, start_point, end_point, raw_data=None, group_in=None, is_representative=False):
+        self.id = tid
         self.start_point = start_point
         self.end_point = end_point
         self.raw_data = raw_data
         # represent which cluster
-        self.group_represented = group_represented
-
+        self.group_in = group_in
+        self.is_representative = is_representative
 
     def set_group_represented(self, group_id):
-        self.group_represented = group_id
+        self.group_in = group_id
 
     def remove_group_represented(self):
-        self.group_represented = None
+        self.group_in = None
 
     def set_raw_data(self, new_raw_data):
         self.raw_data = new_raw_data
@@ -20,5 +20,11 @@ class time_series_obj:
     def get_raw_data(self):
         return self.raw_data
 
-    def toString(self):
+    def set_resentative(self):
+        self.is_representative = True
+
+    def remove_representative(self):
+        self.is_representative = False
+
+    def to_string(self):
         return self.id + str(self.start_point) + str(self.end_point)

@@ -3,10 +3,10 @@ import random
 from fastdtw import fastdtw
 from scipy.spatial.distance import euclidean
 from data_operations import get_data
-
+import numpy as np
 # grouping -> subsequence
 # clustering -> clustered subsequence
-from time_series_obj import time_series_obj
+from time_series_obj import TimeSeriesObj
 
 
 def randomize(arr):
@@ -70,17 +70,18 @@ def clusterer_legacy(groups, st):
                     clusters[sequence] = [sequence]
 
 
-def clusterer(group, length, st, time_series_dict):
+def cluster(group, length, st, time_series_dict):
     """
     all subsequence in 'group' must be of the same length
     For example:
-    [[1,4,2],[6,1,4],[1,2,3],[3,2,1]] is a valid 'subsequences'
+    [[1,4,2],[6,1,4],[1,2,3],[3,2,1]] is a valid 'sub-sequences'
 
     :param list of list group: [[id, start, end], ...]
-    :param int length:
-    :param float st:
+    :param int length: the length of the group to be clustered
+    :param float st: similarity threshold to determine whether a sub-sequence
+    belongs to a group
     
-    :return dic cluster
+    :return a dictionary of clusters
     """
     cluster = dict()
 
@@ -92,14 +93,12 @@ def clusterer(group, length, st, time_series_dict):
     print(length)
     ssequences = []
     for g in group:
-        id = g[0]
+        tid = g[0]
         start_point = g[1]
         end_point = g[2]
-        ssequences.append(time_series_obj(id, start_point,end_point, None))
+        ssequences.append(TimeSeriesObj(tid, start_point, end_point))
 
     # group length validation
-
-
     for time_series in ssequences:
         # end_point and start_point
         if time_series.end_point - time_series.start_point != length:
@@ -109,8 +108,9 @@ def clusterer(group, length, st, time_series_dict):
     ssequences = randomize(ssequences)
 
     delimiter = '_'
+    count = 1
     for ss in ssequences:
-        count = 1
+        print(count)
         ss.set_raw_data(get_data(ss.id, ss.start_point, ss.end_point, time_series_dict))
         if not cluster.keys(): 
             # if there is no item in the similarity cluster
@@ -118,6 +118,7 @@ def clusterer(group, length, st, time_series_dict):
             group_id = str(length) + delimiter + str(count)
             ss.set_group_represented(group_id)
             cluster[ss] = [ss]
+            ss.set = True
             count += 1
             # put the first sequence as the representative of the first cluster
         else:
@@ -128,7 +129,11 @@ def clusterer(group, length, st, time_series_dict):
                 # ss is also a time_series obj
                 ss_raw_data = ss.get_raw_data()
                 rprst_raw_data = rprst.get_raw_data()
-                dist = sim_between_seq(ss_raw_data, rprst_raw_data)[0]
+                # print(type(ss_raw_data))
+                # print(ss_raw_data)
+                # print(rprst_raw_data)
+                dist = euclidean(np.asarray(ss_raw_data), np.asarray(rprst_raw_data))
+                # dist = sim_between_seq(ss_raw_data, rprst_raw_data)[0]
                 # print('dist is' + str(dist))
                 # print('minSim is' + str(minSim))
                 #
