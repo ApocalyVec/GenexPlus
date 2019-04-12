@@ -92,9 +92,11 @@ st = 0.1
 
 if __name__ == '__main__':
     # TODO
+    # Ask Leo to put his path to save pickle file
     Yu_path = ['/Library/Java/JavaVirtualMachines/jdk1.8.0_171.jdk/Contents/Home',
-               '/Users/yli14/BrainWave/GenexPlus/txt',
-               '/Users/yli14/Desktop/DatasetBrainWave/2013e_001_2_channels_02backs.csv']
+               '/Users/yli14/BrainWave/GenexPlus/res/cluster',
+               '/Users/yli14/Desktop/DatasetBrainWave/2013e_001_2_channels_02backs.csv'
+               ]
     Leo_path = ['/Library/Java/JavaVirtualMachines/jdk1.8.0_151.jdk/Contents/Home',
                 '/Users/Leo/Documents/OneDrive/COLLEGE/COURSES/research/genex/genexPlus/test/txt',
                 '/Users/Leo/Documents/OneDrive/COLLEGE/COURSES/research/genex/genexPlus/2013e_001_2_channels_02backs.csv']
@@ -133,7 +135,10 @@ if __name__ == '__main__':
     print("grouping done")
     print("Working on clustering")
 
-    cluster_rdd = group_rdd.map(lambda x: cluster(x[1], x[0], st, global_dict.value)).collect()
+    cluster_rdd = group_rdd.map(lambda x: cluster(x[1], x[0], st, global_dict.value))
+
+    cluster_rdd.saveAsPickleFile(path_save_res)
+    cluster_rdd_reload = sc.pickleFile(path_save_res).collect()
     print("clustering done")
     # TODO Can we do this without broadcasting.
 
