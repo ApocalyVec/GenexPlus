@@ -70,7 +70,7 @@ def clusterer_legacy(groups, st):
                     clusters[sequence] = [sequence]
 
 
-def cluster(group, length, st, time_series_dict):
+def cluster(group, length, st, normalized_ts_dict):
     """
     all subsequence in 'group' must be of the same length
     For example:
@@ -79,6 +79,8 @@ def cluster(group, length, st, time_series_dict):
     :param list of list group: [[id, start, end], ...]
     :param int length: the length of the group to be clustered
     :param float st: similarity threshold to determine whether a sub-sequence
+    :param float global_min: used for minmax normalization
+    :param float global_min: used for minmax normalization
     belongs to a group
     
     :return a dictionary of clusters
@@ -129,8 +131,8 @@ def cluster(group, length, st, time_series_dict):
             # rprst is a time_series obj
             for rprst in list(cluster.keys()):  # iterate though all the similarity clusters, rprst = representative
                 # ss is also a time_series obj
-                ss_raw_data = get_data(ss.id, ss.start_point, ss.end_point, time_series_dict)
-                rprst_raw_data = get_data(rprst.id, rprst.start_point, rprst.end_point, time_series_dict)
+                ss_raw_data = get_data(ss.id, ss.start_point, ss.end_point, normalized_ts_dict)
+                rprst_raw_data = get_data(rprst.id, rprst.start_point, rprst.end_point, normalized_ts_dict)
                 # print(type(ss_raw_data))
                 # print(ss_raw_data)
                 # print(rprst_raw_data)

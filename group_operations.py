@@ -1,3 +1,4 @@
+import math
 import shutil
 from pyspark import SparkContext
 import os
@@ -36,14 +37,15 @@ def get_subsquences(list, length1, length2):
     user defined function for mapping for spark
     :param list: input list, has two rows, the first row is ID, the second is a list of data
     :param tuple: start and end
-    :return: val: a list of a list of value [length, id, start_point, end_point]
+    :return:    val: a list of a list of value [length, id, start_point, end_point]
+                int max: the global maximum of all subseqeunces
+                int min: the global minimum of all subseqeunces
     """
     id = list[0]
     val = []
     # Length from start+lengthrange1, start + lengthrange2
     # in reality, start is 0, end is len(list)
 
-    # get the max and min
     for i in range(0, len(list[1])):
         # make sure to get the length2
         for j in range(length1, length2 + 1):
@@ -54,7 +56,7 @@ def get_subsquences(list, length1, length2):
     return val
 
 
-def generateSource(file, features_to_append):
+def generate_source(file, features_to_append):
     """
     Not doing sub-sequence here
     get the id of time series and data of time series
@@ -69,6 +71,10 @@ def generateSource(file, features_to_append):
     # dict to be broadcasted
     myDict = dict()
     wrap_in_parantheses = lambda x: "(" + str(x) + ")"
+
+    # get the max and min
+    global_min = math.inf
+    global_max = - math.inf
 
     with open(file, 'r') as f:
         for i, line in enumerate(f):
@@ -89,8 +95,21 @@ def generateSource(file, features_to_append):
                 series_data = list(map(float, data[len(features):]))
                 res.append([series_label, series_data])
                 myDict[series_label] = series_data
-    return res, myDict
 
+                # get the min and max
+                if len(series_data) == 0:
+                    continue
+                ts_max = max(series_data)
+                ts_min = min(series_data)
+                if ts_max > global_max:
+                    global_max = ts_max
 
+                if ts_min < global_min:
+                    global_min = ts_min
+
+    # for key, value in myDict.items():
+    #     myDict[key] = normalize(value, max, min)
+
+    return res, myDict, global_min, global_max
 
 
