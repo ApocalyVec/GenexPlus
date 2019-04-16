@@ -88,7 +88,7 @@ def generateSource(file, features_to_append):
 
 
 #Similarity Threshold
-st = 0.1
+st = 10
 
 if __name__ == '__main__':
     # TODO
@@ -131,15 +131,25 @@ if __name__ == '__main__':
     # res_rdd = global_dict_rdd.flatMap(lambda x: get_all_subsquences(x)).collect()
     group_rdd = global_dict_rdd.flatMap(lambda x: get_all_subsquences(x)).map(lambda x: (x[0], [x[1:]])).reduceByKey(
         lambda a, b: a + b)
-    # group_res = group_rdd.collect()
     print("grouping done")
+
+    """
+    The following code is for testing clustering operation.
+    4/15/19
+    # print("Test clustering")
+    # group_res = group_rdd.collect()
+    # cluster(group_res[1][1], group_res[1][0], st, global_dict.value)  # testing group with length of 9
+    """
+
+
+
     print("Working on clustering")
-
     cluster_rdd = group_rdd.map(lambda x: cluster(x[1], x[0], st, global_dict.value))
-
     cluster_rdd.saveAsPickleFile(path_save_res)
     cluster_rdd_reload = sc.pickleFile(path_save_res).collect()
     print("clustering done")
+
+
     # TODO Can we do this without broadcasting.
 
     # TODO here clusterer x[1] is all the sub-sequences of len x[0], but x[1] is actually the index of seb-sequebces: [id, start, end]

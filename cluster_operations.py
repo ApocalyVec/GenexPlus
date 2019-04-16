@@ -125,7 +125,7 @@ def cluster(group, length, st, time_series_dict):
             minSim = math.inf
             minRprst = None  # TODO MinRprst should not be None, catch None exception!
             # rprst is a time_series obj
-            for rprst in list(cluster.keys()):  # iterate though all the similarity groups, rprst = representative
+            for rprst in list(cluster.keys()):  # iterate though all the similarity clusters, rprst = representative
                 # ss is also a time_series obj
                 ss_raw_data = get_data(ss.id, ss.start_point, ss.end_point, time_series_dict)
                 rprst_raw_data = get_data(rprst.id, rprst.start_point, rprst.end_point, time_series_dict)
@@ -140,24 +140,26 @@ def cluster(group, length, st, time_series_dict):
                 if dist < minSim:
                     minSim = dist
                     minRprst = rprst
-                if minSim <= math.sqrt(length) * st / 2:  # if the calculated min similarity is smaller than the
-                    # similarity threshold, put subsequence in the similarity cluster keyed by the min representative
-                    cluster[minRprst].append(ss)
-                else:
-                    # if the minSim is greater than the similarity threshold, we create a new similarity group
-                    # with this sequence being its representative
-                    # if ss in cluster.keys():
-                    #     # should skip
-                    #     continue
-                    #     # raise Exception('cluster_operations: clusterer: Trying to create new similarity cluster '
-                    #     #                 'due to exceeding similarity threshold, target sequence is already a '
-                    #     #                 'representative(key) in cluster. The sequence isz: ' + ss.toString())
-                    if ss not in cluster.keys():
-                        cluster[ss] = ss
-                        group_id = str(length) + delimiter + str(count)
-                        ss.set_group_represented(group_id)
-                        ss.set_representative()
-                        count += 1
+
+            sim = math.sqrt(length) * st / 2
+            if minSim <= sim:  # if the calculated min similarity is smaller than the
+                # similarity threshold, put subsequence in the similarity cluster keyed by the min representative
+                cluster[minRprst].append(ss)
+            else:
+                # if the minSim is greater than the similarity threshold, we create a new similarity group
+                # with this sequence being its representative
+                # if ss in cluster.keys():
+                #     # should skip
+                #     continue
+                #     # raise Exception('cluster_operations: clusterer: Trying to create new similarity cluster '
+                #     #                 'due to exceeding similarity threshold, target sequence is already a '
+                #     #                 'representative(key) in cluster. The sequence isz: ' + ss.toString())
+                if ss not in cluster.keys():
+                    cluster[ss] = [ss]
+                    group_id = str(length) + delimiter + str(count)
+                    ss.set_group_represented(group_id)
+                    ss.set_representative()
+                    count += 1
 
     return cluster
 
