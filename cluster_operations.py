@@ -112,7 +112,7 @@ def cluster(group, length, st, time_series_dict):
     delimiter = '_'
     cluster_count = 0
     for ss in ssequences:
-        print("number of clusters is " + str(cluster_count))
+        # print("number of clusters is " + str(cluster_count))
         # ss.set_raw_data(get_data(ss.id, ss.start_point, ss.end_point, time_series_dict))
         if not cluster.keys(): 
             # if there is no item in the similarity cluster

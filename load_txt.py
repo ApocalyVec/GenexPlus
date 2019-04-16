@@ -1,9 +1,3 @@
-
-
-import numpy as np
-import pandas as pd
-from mrjob.job import MRJob
-
 # df = pd.read_table('/Users/yli14/Desktop/DatasetBrainWave/Driver_all_1_200.txt')
 
 # df = {'co1': [1,2], 'col2' :[[1,2],[1,2]]}

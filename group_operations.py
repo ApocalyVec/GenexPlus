@@ -31,7 +31,7 @@ def remove_trailing_zeros(l):
     return l[0:index]
 
 
-def get_subsquences(list, startEnd):
+def get_subsquences(list, length1, length2):
     """
     user defined function for mapping for spark
     :param list: input list, has two rows, the first row is ID, the second is a list of data
@@ -40,12 +40,18 @@ def get_subsquences(list, startEnd):
     """
     id = list[0]
     val = []
+    # Length from start+lengthrange1, start + lengthrange2
     # in reality, start is 0, end is len(list)
-    start = startEnd[0]
-    end = startEnd[1]
-    for i in range(start, end):
-        for j in range(0, i):
-            val.append([i - j, id, j, i])
+    # start = startEnd[0]
+    # end = startEnd[1]
+    # print('lenth of list is' + str(len(list)))
+    # i- j is in range lengthrange1, lengthrange2
+    for i in range(0, len(list[1])):
+        # make sure to get the length2
+        for j in range(length1, length2 + 1):
+            if i + j < len(list[1]):
+                # length, id, start, end
+                val.append([j, id, i, i + j])
 
     return val
 

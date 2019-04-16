@@ -19,7 +19,7 @@ if __name__ == '__main__':
     Leo_path = ['/Library/Java/JavaVirtualMachines/jdk1.8.0_151.jdk/Contents/Home',
                 '/Users/Leo/Documents/OneDrive/COLLEGE/COURSES/research/genex/genexPlus/test/txt',
                 '/Users/Leo/Documents/OneDrive/COLLEGE/COURSES/research/genex/genexPlus/2013e_001_2_channels_02backs.csv']
-    path = Leo_path
+    path = Yu_path
     os.environ['JAVA_HOME'] = path[0]
     # create a spark job
     sc = SparkContext("local", "First App")
@@ -45,11 +45,13 @@ if __name__ == '__main__':
     global_dict = sc.broadcast(time_series_dict)
 
     global_dict_rdd = sc.parallelize(res_list[1:]).cache()
+    # global_dict_res = global_dict_rdd.collect()
     # finish grouping here, result in a key, value pair where
     # key is the length of sub-sequence, value is the [id of source time series, start_point, end_point]
     # res_rdd = global_dict_rdd.flatMap(lambda x: get_all_subsquences(x)).collect()
-    group_rdd = global_dict_rdd.flatMap(lambda x: get_subsquences(x, (10, 15))).map(lambda x: (x[0], [x[1:]])).reduceByKey(
+    group_rdd = global_dict_rdd.flatMap(lambda x: get_subsquences(x,10,15)).map(lambda x: (x[0], [x[1:]])).reduceByKey(
         lambda a, b: a + b)
+    group_rdd_res = group_rdd.collect()
     print("grouping done")
 
     """
