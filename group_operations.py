@@ -43,6 +43,9 @@ def get_subsquences(list, startEnd):
     # in reality, start is 0, end is len(list)
     start = startEnd[0]
     end = startEnd[1]
+
+    # get the max and min
+
     for i in range(start, end):
         for j in range(0, i):
             val.append([i - j, id, j, i])
