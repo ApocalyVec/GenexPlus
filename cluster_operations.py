@@ -90,7 +90,7 @@ def cluster(group, length, st, time_series_dict):
     # ???or maybe during group operation
     # During group operation is better, because the data will be too large if
     # we retrieve all of it
-    print(length)
+    print("Clustering length of: " + str(length))
     ssequences = []
     for g in group:
         tid = g[0]

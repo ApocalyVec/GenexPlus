@@ -98,7 +98,7 @@ if __name__ == '__main__':
     Leo_path = ['/Library/Java/JavaVirtualMachines/jdk1.8.0_151.jdk/Contents/Home',
                 '/Users/Leo/Documents/OneDrive/COLLEGE/COURSES/research/genex/genexPlus/test/txt',
                 '/Users/Leo/Documents/OneDrive/COLLEGE/COURSES/research/genex/genexPlus/2013e_001_2_channels_02backs.csv']
-    path = Yu_path
+    path = Leo_path
     os.environ['JAVA_HOME'] = path[0]
     # create a spark job
     sc = SparkContext("local", "First App")
