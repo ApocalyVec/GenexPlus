@@ -90,13 +90,15 @@ def cluster(group, length, st, time_series_dict):
     # ???or maybe during group operation
     # During group operation is better, because the data will be too large if
     # we retrieve all of it
-    print("Clustering length of: " + str(length))
+
     ssequences = []
     for g in group:
         tid = g[0]
         start_point = g[1]
         end_point = g[2]
         ssequences.append(TimeSeriesObj(tid, start_point, end_point))
+
+    print("Clustering length of: " + str(length) + ", number of subsequences is " + str(len(ssequences)))
 
     # group length validation
     for time_series in ssequences:
@@ -108,18 +110,18 @@ def cluster(group, length, st, time_series_dict):
     ssequences = randomize(ssequences)
 
     delimiter = '_'
-    count = 1
+    cluster_count = 0
     for ss in ssequences:
-        print(count)
+        print("number of clusters is " + str(cluster_count))
         # ss.set_raw_data(get_data(ss.id, ss.start_point, ss.end_point, time_series_dict))
         if not cluster.keys(): 
             # if there is no item in the similarity cluster
             # future delimiter
-            group_id = str(length) + delimiter + str(count)
+            group_id = str(length) + delimiter + str(cluster_count)
             ss.set_group_represented(group_id)
             cluster[ss] = [ss]
             ss.set_representative()
-            count += 1
+            cluster_count += 1
             # put the first sequence as the representative of the first cluster
         else:
             minSim = math.inf
@@ -156,10 +158,10 @@ def cluster(group, length, st, time_series_dict):
                 #     #                 'representative(key) in cluster. The sequence isz: ' + ss.toString())
                 if ss not in cluster.keys():
                     cluster[ss] = [ss]
-                    group_id = str(length) + delimiter + str(count)
+                    group_id = str(length) + delimiter + str(cluster_count)
                     ss.set_group_represented(group_id)
                     ss.set_representative()
-                    count += 1
+                    cluster_count += 1
 
     return cluster
 
