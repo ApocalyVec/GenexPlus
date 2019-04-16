@@ -111,7 +111,7 @@ def cluster(group, length, st, time_series_dict):
     count = 1
     for ss in ssequences:
         print(count)
-        ss.set_raw_data(get_data(ss.id, ss.start_point, ss.end_point, time_series_dict))
+        # ss.set_raw_data(get_data(ss.id, ss.start_point, ss.end_point, time_series_dict))
         if not cluster.keys(): 
             # if there is no item in the similarity cluster
             # future delimiter
@@ -127,8 +127,8 @@ def cluster(group, length, st, time_series_dict):
             # rprst is a time_series obj
             for rprst in list(cluster.keys()):  # iterate though all the similarity groups, rprst = representative
                 # ss is also a time_series obj
-                ss_raw_data = ss.get_raw_data()
-                rprst_raw_data = rprst.get_raw_data()
+                ss_raw_data = get_data(ss.id, ss.start_point, ss.end_point, time_series_dict)
+                rprst_raw_data = get_data(rprst.id, rprst.start_point, rprst.end_point, time_series_dict)
                 # print(type(ss_raw_data))
                 # print(ss_raw_data)
                 # print(rprst_raw_data)
@@ -153,7 +153,7 @@ def cluster(group, length, st, time_series_dict):
                     #     #                 'due to exceeding similarity threshold, target sequence is already a '
                     #     #                 'representative(key) in cluster. The sequence isz: ' + ss.toString())
                     if ss not in cluster.keys():
-                        cluster[ss] = [].append(ss)
+                        cluster[ss] = ss
                         group_id = str(length) + delimiter + str(count)
                         ss.set_group_represented(group_id)
                         ss.set_representative()
