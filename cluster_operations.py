@@ -10,7 +10,7 @@ from time_series_obj import TimeSeriesObj
 
 # distance libraries
 from scipy.spatial.distance import euclidean
-from scipy.spatial.distance import mahalanobis
+from scipy.spatial.distance import cityblock
 from scipy.spatial.distance import minkowski
 
 def randomize(arr):
@@ -149,7 +149,7 @@ def cluster(group, length, st, normalized_ts_dict, dist_type = 'eu'):
                 if dist_type == 'eu':
                     dist = euclidean(np.asarray(ss_raw_data), np.asarray(rprst_raw_data))
                 elif dist_type == 'ma':
-                    dist = mahalanobis(np.asarray(ss_raw_data), np.asarray(rprst_raw_data))
+                    dist = cityblock(np.asarray(ss_raw_data), np.asarray(rprst_raw_data))
                 elif dist_type == 'mi':
                     dist = minkowski(np.asarray(ss_raw_data), np.asarray(rprst_raw_data))
                 else: raise Exception("cluster_operations: cluster: invalid distance type: " + dist_type)
