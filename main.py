@@ -4,12 +4,13 @@ from pyspark import SparkContext
 import os
 
 from cluster_operations import cluster
-from data_operations import normalize_ts_with_min_max
+from data_operations import normalize_ts_with_min_max, get_data
 from group_operations import get_subsquences
 from group_operations import generate_source
-
+from visualize_sequences import plot_cluster
+import matplotlib.pyplot as plt
 # Similarity Threshold
-st = 0.1
+st = 0.2
 
 if __name__ == '__main__':
     # TODO
@@ -21,7 +22,7 @@ if __name__ == '__main__':
     Leo_path = ['/Library/Java/JavaVirtualMachines/jdk1.8.0_151.jdk/Contents/Home',
                 '/Users/Leo/Documents/OneDrive/COLLEGE/COURSES/research/genex/genexPlus/test/txt',
                 '/Users/Leo/Documents/OneDrive/COLLEGE/COURSES/research/genex/genexPlus/2013e_001_2_channels_02backs.csv']
-    path = Leo_path
+    path = Yu_path
     os.environ['JAVA_HOME'] = path[0]
     # create a spark job
     sc = SparkContext("local", "First App")
@@ -51,13 +52,14 @@ if __name__ == '__main__':
     # for future reading data
     # NOTE that the data being broadcasted is the minmax-normalized data
     global_dict = sc.broadcast(normalized_ts_dict)
+    time_series_dict = sc.broadcast(time_series_dict)
 
     global_dict_rdd = sc.parallelize(res_list[1:]).cache()
     # global_dict_res = global_dict_rdd.collect()
     # finish grouping here, result in a key, value pair where
     # key is the length of sub-sequence, value is the [id of source time series, start_point, end_point]
     # res_rdd = global_dict_rdd.flatMap(lambda x: get_all_subsquences(x)).collect()
-    group_rdd = global_dict_rdd.flatMap(lambda x: get_subsquences(x, 10, 15)).map(
+    group_rdd = global_dict_rdd.flatMap(lambda x: get_subsquences(x, 100, 110)).map(
         lambda x: (x[0], [x[1:]])).reduceByKey(
         lambda a, b: a + b)
     group_rdd_res = group_rdd.collect()
@@ -76,6 +78,9 @@ if __name__ == '__main__':
 
     cluster_rdd.saveAsPickleFile(path_save_res)
     cluster_rdd_reload = sc.pickleFile(path_save_res).collect()
+    # first_dict = cluster_rdd_reload[0]
+    plot_cluster(cluster_rdd_reload, 2, time_series_dict, 5)
+
     print("clustering done")
 
     # TODO Can we do this without broadcasting.

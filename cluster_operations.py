@@ -163,6 +163,7 @@ def cluster(group, length, st, normalized_ts_dict, dist_type = 'eu'):
             if minSim <= sim:  # if the calculated min similarity is smaller than the
                 # similarity threshold, put subsequence in the similarity cluster keyed by the min representative
                 cluster[minRprst].append(ss)
+                ss.set_group_represented(minRprst.get_group_represented())
             else:
                 # if the minSim is greater than the similarity threshold, we create a new similarity group
                 # with this sequence being its representative

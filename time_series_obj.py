@@ -11,6 +11,9 @@ class TimeSeriesObj:
     def set_group_represented(self, group_id):
         self.group_in = group_id
 
+    def get_group_represented(self):
+        return self.group_in
+
     def remove_group_represented(self):
         self.group_in = None
 
