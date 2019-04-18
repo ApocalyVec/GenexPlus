@@ -1,13 +1,17 @@
 import math
 import random
 from fastdtw import fastdtw
-from scipy.spatial.distance import euclidean
+
 from data_operations import get_data
 import numpy as np
 # grouping -> subsequence
 # clustering -> clustered subsequence
 from time_series_obj import TimeSeriesObj
 
+# distance libraries
+from scipy.spatial.distance import euclidean
+from scipy.spatial.distance import mahalanobis
+from scipy.spatial.distance import minkowski
 
 def randomize(arr):
     """
@@ -70,7 +74,7 @@ def clusterer_legacy(groups, st):
                     clusters[sequence] = [sequence]
 
 
-def cluster(group, length, st, normalized_ts_dict):
+def cluster(group, length, st, normalized_ts_dict, dist_type = 'eu'):
     """
     all subsequence in 'group' must be of the same length
     For example:
@@ -81,6 +85,7 @@ def cluster(group, length, st, normalized_ts_dict):
     :param float st: similarity threshold to determine whether a sub-sequence
     :param float global_min: used for minmax normalization
     :param float global_min: used for minmax normalization
+    :param dist_type: distance types including eu = euclidean, ma = mahalanobis, mi = minkowski
     belongs to a group
     
     :return a dictionary of clusters
@@ -136,11 +141,20 @@ def cluster(group, length, st, normalized_ts_dict):
                 # print(type(ss_raw_data))
                 # print(ss_raw_data)
                 # print(rprst_raw_data)
-                dist = euclidean(np.asarray(ss_raw_data), np.asarray(rprst_raw_data))
                 # dist = sim_between_seq(ss_raw_data, rprst_raw_data)[0]
                 # print('dist is' + str(dist))
                 # print('minSim is' + str(minSim))
-                #
+
+                # check the distance type
+                if dist_type == 'eu':
+                    dist = euclidean(np.asarray(ss_raw_data), np.asarray(rprst_raw_data))
+                elif dist_type == 'ma':
+                    dist = mahalanobis(np.asarray(ss_raw_data), np.asarray(rprst_raw_data))
+                elif dist_type == 'mi':
+                    dist = minkowski(np.asarray(ss_raw_data), np.asarray(rprst_raw_data))
+                else: raise Exception("cluster_operations: cluster: invalid distance type: " + dist_type)
+
+                # update the minimal similarity
                 if dist < minSim:
                     minSim = dist
                     minRprst = rprst
@@ -166,15 +180,3 @@ def cluster(group, length, st, normalized_ts_dict):
                     cluster_count += 1
 
     return cluster
-
-
-def sim_between_seq(seq1, seq2):
-    """
-    calculate the similarity between sequence 1 and sequence 2 using DTW
-
-    TODO customizable distance type using Scipy
-    :param seq1:
-    :param seq2:
-    :return float: return the similarity between sequence 1 and sequence 2
-    """
-    return fastdtw(seq1, seq2, dist=euclidean)
