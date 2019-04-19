@@ -9,13 +9,13 @@ def plot_cluster(cluster_dict, dict_number, time_series_dict, sequence_number):
     for dict_with_same_length in cluster_dict[0: dict_number]:
         for key,value in dict_with_same_length.items():
 
-            plt.figure()
+            plt.figure(figsize=(15, 15))
             for ss in value[0:sequence_number]:
                 val = get_data(ss.id, ss.start_point, ss.end_point, time_series_dict.value)
                 if ss.is_representative :
-                    plt.plot(val, label='id %s' % ss.get_group_represented() + '_rep'+ss.id[16:32] + '_'+  str(ss.start_point) + '_' + str(ss.end_point))
+                    plt.plot(val, label='id %s' % ss.get_group_represented() + ss.id + '_'+  str(ss.start_point) + '_' + str(ss.end_point))
                 else:
-                    plt.plot(val, label='id %s' % ss.get_group_represented() + ss.id[16:32] + '_'+ str(ss.start_point) + '_' + str(ss.end_point))
+                    plt.plot(val, label='id %s' % ss.get_group_represented() + ss.id + '_'+ str(ss.start_point) + '_' + str(ss.end_point))
 
             plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     plt.show()

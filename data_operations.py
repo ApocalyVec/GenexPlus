@@ -1,7 +1,7 @@
 import math
 
 
-def get_data(id, start, end, time_series_dict):
+def get_data(tid, start, end, time_series_dict):
     """
 
     :param id:
@@ -13,10 +13,24 @@ def get_data(id, start, end, time_series_dict):
     """
     # TODO should we make timeSeries a dic as well as a list (for distributed computing)
 
-    if id not in time_series_dict.keys():
-        raise Exception("data_operations: get_data: subsequnce of ID " + id + " not found in TimeSeries!")
+    if tid not in time_series_dict.keys():
+        raise Exception("data_operations: get_data: subsequnce of ID " + tid + " not found in TimeSeries!")
     else:
-        return time_series_dict[id][start:end]
+        return time_series_dict[tid][start:end]
+
+
+def get_data_for_timeSeriesObj(time_series_obj, time_series_dict):
+    """
+
+    :type time_series_obj: TimeSeriesObj
+    :param time_series_obj:
+    :param time_series_dict:
+    """
+    tid = time_series_obj.id
+    if tid not in time_series_dict.keys():
+        raise Exception("data_operations: get_data: subsequnce of ID " + tid + " not found in TimeSeries!")
+    else:
+        return time_series_dict[tid][time_series_obj.start_point:time_series_obj.end_point]
 
 
 def normalize_ts_dict(time_series_dict):

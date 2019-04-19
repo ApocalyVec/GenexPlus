@@ -2,6 +2,7 @@ import math
 import random
 from fastdtw import fastdtw
 
+from classifier_operations import sim_between_seq
 from data_operations import get_data
 import numpy as np
 # grouping -> subsequence
