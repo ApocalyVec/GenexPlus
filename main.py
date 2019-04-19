@@ -101,6 +101,11 @@ if __name__ == '__main__':
     """
     ##### query
     Current implementation: if we want to find k best matches, we give the first k best matches for given sequence length range
+    
+    
+    The following line is for testing querying on one cluster
+    # query_result = query(query_sequence, cluster_rdd_reload[0], k, time_series_dict.value)
+
     """
 
     # query_string = input("")
@@ -113,7 +118,6 @@ if __name__ == '__main__':
     if querying_range[0] < grouping_range[0] or querying_range[1] > grouping_range[1]:
         raise Exception("query_operations: query: Query range does not match group range")
 
-    # query_result = query(query_sequence, cluster_rdd_reload[0], k, time_series_dict.value)
     print("querying done")
     # TODO implement querying range
     query_result = cluster_rdd.map(lambda clusters: query(query_sequence, clusters, k, time_series_dict.value)).collect()
