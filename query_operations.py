@@ -29,6 +29,7 @@ def query(query_sequence, cluster, k, time_series_dict):
     if min_rprs is not None:
         print("Querying Cluster of length: " + str(len(get_data_for_timeSeriesObj(min_rprs, time_series_dict))))
         target_cluster = cluster[min_rprs]
+
         # this sorting is taking a long time!
         target_cluster.sort(key=lambda cluster_sequence: sim_between_seq(query_sequence,
                                                                          get_data_for_timeSeriesObj(cluster_sequence,

@@ -8,7 +8,7 @@ from data_operations import normalize_ts_with_min_max, get_data
 from group_operations import get_subsquences
 from group_operations import generate_source
 from query_operations import query
-from visualize_sequences import plot_cluster
+from visualize_sequences import plot_cluster, plot_query_result
 import matplotlib.pyplot as plt
 
 # Similarity Threshold
@@ -118,3 +118,4 @@ if __name__ == '__main__':
     # TODO implement querying range
     query_result = cluster_rdd.map(lambda clusters: query(query_sequence, clusters, k, time_series_dict.value)).collect()
 
+    plot_query_result(query_sequence, query_result, time_series_dict.value)
