@@ -18,9 +18,11 @@ st = 0.2
 if __name__ == '__main__':
     # TODO
     # Ask Leo to put his path to save pickle file
+    # /Users/yli14/BrainWave/GenexPlus/001-SART-August2017-MB-200.csv
+    # /Users/yli14/Desktop/DatasetBrainWave/2013e_001_2_channels_02backs.csv
     Yu_path = ['/Library/Java/JavaVirtualMachines/jdk1.8.0_171.jdk/Contents/Home',
                '/Users/yli14/BrainWave/GenexPlus/res/cluster',
-               '/Users/yli14/Desktop/DatasetBrainWave/2013e_001_2_channels_02backs.csv'
+               '/Users/yli14/BrainWave/GenexPlus/001-SART-August2017-MB-50.csv'
                ]
     Leo_path = ['/Library/Java/JavaVirtualMachines/jdk1.8.0_151.jdk/Contents/Home',
                 '/Users/Leo/Documents/OneDrive/COLLEGE/COURSES/research/genex/genexPlus/test/txt',
@@ -71,7 +73,7 @@ if __name__ == '__main__':
     group_rdd_res: list: items = (length, time series list) -> time series list: items = (id, start, end)
     """
 
-    grouping_range = (89, 93)
+    grouping_range = (89, 92)
     group_rdd = global_dict_rdd.flatMap(lambda x: get_subsquences(x, grouping_range[0], grouping_range[1])).map(
         lambda x: (x[0], [x[1:]])).reduceByKey(
         lambda a, b: a + b)
@@ -102,12 +104,14 @@ if __name__ == '__main__':
 
 
 
-
-    query_sequence = get_data('(2013e_001)_(100-0-Back)_(B-DC8)_(232665953.1250)', 14, 114, time_series_dict.value)  # get an example query
-    filter_rdd = cluster_rdd.filter(lambda x: exclude_same_id(x, '(2013e_001)_(100-0-Back)_(B-DC8)_(232665953.1250)'))
+    # '(001-SART-August2017-MB)_(211-Current-Item:-3)_(A-DC1)_(64434.0)_(105950.0)'
+    # '(2013e_001)_(100-0-Back)_(B-DC8)_(232665953.1250)'
+    query_id = '(001-SART-August2017-MB)_(211-Current-Item:-3)_(A-DC1)_(64434.0)_(105950.0)'
+    query_sequence = get_data(query_id, 24, 117, time_series_dict.value)  # get an example query
+    filter_rdd = cluster_rdd.filter(lambda x: exclude_same_id(x, query_id))
     # raise exception if the query_range exceeds the grouping range
     querying_range = (90, 91)
-    k = 3  # looking for k best matches
+    k = 5  # looking for k best matches
     if querying_range[0] < grouping_range[0] or querying_range[1] > grouping_range[1]:
         raise Exception("query_operations: query: Query range does not match group range")
 
@@ -122,6 +126,7 @@ if __name__ == '__main__':
 
         """
     # query_result = cluster_rdd.filter(lambda x: x).map(lambda clusters: query(query_sequence, querying_range, clusters, k, time_series_dict.value)).collect()
-    query_result = filter_rdd.map(lambda clusters: query(query_sequence, querying_range, clusters, k, time_series_dict.value)).collect()
+    exclude_overlapping = True
+    query_result = filter_rdd.map(lambda clusters: query(query_sequence, querying_range, clusters, k, time_series_dict.value, exclude_overlapping, 0.5)).collect()
 
     plot_query_result(query_sequence, query_result, time_series_dict.value)
