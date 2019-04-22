@@ -78,34 +78,34 @@ def generate_source(file, features_to_append):
 
     with open(file, 'r') as f:
         for i, line in enumerate(f):
-            if not i:
+            if i != 0:
                 features = list(map(lambda x: strip_function(x),
                                     line.strip()[:-1].split(',')))
                 # print(features)
                 label_features_index = [features[feature] for feature in features_to_append]
                 # print(label_features_index)
 
-            if line != "" and line != "\n":
-                data = remove_trailing_zeros(line.split(",")[:-1])
+                if line != "" and line != "\n":
+                    data = remove_trailing_zeros(line.split(",")[:-1])
 
-                # Get feature values for label
-                label_features = [wrap_in_parantheses(data[index]) for index in range(0, len(label_features_index) - 1)]
-                series_label = "_".join(label_features).replace('  ', '-').replace(' ', '-')
+                    # Get feature values for label
+                    label_features = [wrap_in_parantheses(data[index]) for index in range(0, len(label_features_index))]
+                    series_label = "_".join(label_features).replace('  ', '-').replace(' ', '-')
 
-                series_data = list(map(float, data[len(features):]))
-                res.append([series_label, series_data])
-                myDict[series_label] = series_data
+                    series_data = list(map(float, data[len(label_features_index):]))
+                    res.append([series_label, series_data])
+                    myDict[series_label] = series_data
 
-                # get the min and max
-                if len(series_data) == 0:
-                    continue
-                ts_max = max(series_data)
-                ts_min = min(series_data)
-                if ts_max > global_max:
-                    global_max = ts_max
+                    # get the min and max
+                    if len(series_data) == 0:
+                        continue
+                    ts_max = max(series_data)
+                    ts_min = min(series_data)
+                    if ts_max > global_max:
+                        global_max = ts_max
 
-                if ts_min < global_min:
-                    global_min = ts_min
+                    if ts_min < global_min:
+                        global_min = ts_min
 
     # for key, value in myDict.items():
     #     myDict[key] = normalize(value, max, min)
