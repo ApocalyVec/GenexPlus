@@ -49,11 +49,19 @@ def generateDict(file, features_to_append, wrap_in_parantheses):
                 # print(len(features))
     return myDict
 
+def read_part_csv(csv_read_path, row_range, csv_save_path, save = True):
+    import pandas as pd
+    data = pd.read_csv(csv_read_path, nrows=row_range)
 
+    if save:
+        data.to_csv(csv_save_path)
 
 if __name__ == '__main__':
-    file = '001-SART-August2017-MB.csv'
-    features_to_append = [0, 1, 2, 3, 4]
-    wrap_in_parantheses = lambda x: "(" + str(x) + ")"
-    mydict = generateDict(file, features_to_append, wrap_in_parantheses)
-    print(mydict)
+    # file = '001-SART-August2017-MB.csv'
+    # features_to_append = [0, 1, 2, 3, 4]
+    # wrap_in_parantheses = lambda x: "(" + str(x) + ")"
+    # mydict = generateDict(file, features_to_append, wrap_in_parantheses)
+    # print(mydict)
+    csv_read_path = r'/Users/yli14/BrainWave/GenexPlus/001-SART-August2017-MB.csv'
+    csv_save_path = r'/Users/yli14/BrainWave/GenexPlus/001-SART-August2017-MB-50.csv'
+    read_part_csv(csv_read_path, 50, csv_save_path)
