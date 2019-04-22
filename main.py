@@ -8,6 +8,7 @@ from data_operations import normalize_ts_with_min_max, get_data
 from group_operations import get_subsquences
 from group_operations import generate_source
 from query_operations import query
+from filter_operation import exclude_same_id
 from visualize_sequences import plot_cluster, plot_query_result
 import matplotlib.pyplot as plt
 
@@ -24,7 +25,7 @@ if __name__ == '__main__':
     Leo_path = ['/Library/Java/JavaVirtualMachines/jdk1.8.0_151.jdk/Contents/Home',
                 '/Users/Leo/Documents/OneDrive/COLLEGE/COURSES/research/genex/genexPlus/test/txt',
                 '/Users/Leo/Documents/OneDrive/COLLEGE/COURSES/research/genex/genexPlus/2013e_001_2_channels_02backs.csv']
-    path = Leo_path
+    path = Yu_path
     os.environ['JAVA_HOME'] = path[0]
     # create a spark job
     sc = SparkContext("local", "First App")
@@ -70,7 +71,7 @@ if __name__ == '__main__':
     group_rdd_res: list: items = (length, time series list) -> time series list: items = (id, start, end)
     """
 
-    grouping_range = (90, 91)
+    grouping_range = (89, 93)
     group_rdd = global_dict_rdd.flatMap(lambda x: get_subsquences(x, grouping_range[0], grouping_range[1])).map(
         lambda x: (x[0], [x[1:]])).reduceByKey(
         lambda a, b: a + b)
@@ -90,36 +91,37 @@ if __name__ == '__main__':
 
     cluster_rdd = group_rdd.map(lambda x: cluster(x[1], x[0], st, global_dict.value))
 
-    cluster_rdd.saveAsPickleFile(path_save_res)  # save all the cluster to the hard drive
-    cluster_rdd_reload = sc.pickleFile(path_save_res).collect()  # here we have all the clusters in memory
+    # cluster_rdd.saveAsPickleFile(path_save_res)  # save all the cluster to the hard drive
+    # cluster_rdd_reload = sc.pickleFile(path_save_res).collect()  # here we have all the clusters in memory
     # first_dict = cluster_rdd_reload[0]
     print("clustering done")
 
     # plot all the clusters
     # plot_cluster(cluster_rdd_reload, 2, time_series_dict, 5)
 
-    """
-    ##### query
-    Current implementation: if we want to find k best matches, we give the first k best matches for given sequence length range
-    
-    
-    The following line is for testing querying on one cluster
-    # query_result = query(query_sequence, cluster_rdd_reload[0], k, time_series_dict.value)
 
-    """
 
-    # query_string = input("")
+
 
     query_sequence = get_data('(2013e_001)_(100-0-Back)_(B-DC8)_(232665953.1250)', 14, 114, time_series_dict.value)  # get an example query
-
+    filter_rdd = cluster_rdd.filter(lambda x: exclude_same_id(x, '(2013e_001)_(100-0-Back)_(B-DC8)_(232665953.1250)'))
     # raise exception if the query_range exceeds the grouping range
     querying_range = (90, 91)
     k = 3  # looking for k best matches
     if querying_range[0] < grouping_range[0] or querying_range[1] > grouping_range[1]:
         raise Exception("query_operations: query: Query range does not match group range")
 
-    print("querying done")
-    # TODO implement querying range
-    query_result = cluster_rdd.map(lambda clusters: query(query_sequence, clusters, k, time_series_dict.value)).collect()
+
+    """
+        ##### query
+        Current implementation: if we want to find k best matches, we give the first k best matches for given sequence length range
+
+
+        The following line is for testing querying on one cluster
+        # query_result = query(query_sequence, cluster_rdd_reload[0], k, time_series_dict.value)
+
+        """
+    # query_result = cluster_rdd.filter(lambda x: x).map(lambda clusters: query(query_sequence, querying_range, clusters, k, time_series_dict.value)).collect()
+    query_result = filter_rdd.map(lambda clusters: query(query_sequence, querying_range, clusters, k, time_series_dict.value)).collect()
 
     plot_query_result(query_sequence, query_result, time_series_dict.value)
