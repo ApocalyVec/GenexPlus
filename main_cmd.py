@@ -38,7 +38,7 @@ def main(args):
                 '/Users/Leo/Documents/OneDrive/COLLEGE/COURSES/research/genex/genexPlus/test/txt',
                 '/Users/Leo/Documents/OneDrive/COLLEGE/COURSES/research/genex/genexPlus/2013e_001_2_channels_02backs.csv']
 
-    path = Yu_path
+    path = Server_path
     os.environ['JAVA_HOME'] = path[0]
     # create a spark job
     cores = args.cores
@@ -65,6 +65,7 @@ def main(args):
         # res_list: list of raw time series data to be on distributed
         # timeSeries: a dictionary version of as res_list, used for sebsequence look up
         res_list, time_series_dict, global_min, global_max = generate_source(file, features_to_append)
+        print('processing dataset' + path[2])
         print("Global Max is " + str(global_max))
         print("Global Min is " + str(global_min))
 
