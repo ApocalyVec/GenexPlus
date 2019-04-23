@@ -50,7 +50,7 @@ def query(query_sequence, query_range, cluster, k, time_series_dict, exclude_ove
 
     # where can we get none?
     if len(target_cluster) != 0:
-        print(target_cluster)
+        # print(target_cluster)
         if exclude_overlap:
             target_cluster = exclude_overlapping(target_cluster, percentage, k)
             print("k is" + str(k))
