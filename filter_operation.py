@@ -9,11 +9,11 @@ def exclude_same_id(cluster, query_id):
     for cur_rprs in cluster.keys():
         cur_list = cluster[cur_rprs]
         new_list = []
-        print('before filter size is ' + str(len(cur_list)))
+        # print('before filter size is ' + str(len(cur_list)))
         for ts_object in cur_list:
             if ts_object.id != query_id:
                 new_list.append(ts_object)
-        print('after filter size is ' + str(len(new_list)))
+        # print('after filter size is ' + str(len(new_list)))
         cluster[cur_rprs] = new_list
 
     return cluster
