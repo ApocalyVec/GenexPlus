@@ -27,9 +27,11 @@ def str2bool(v):
 
 
 def main(args):
+    file_path = args.input
+    # './dataset/001-SART-August2017-MB.csv'
     Server_path = ['/usr/lib/jvm/java-1.8.0-openjdk-amd64',
                    './res/saved_dataset',
-                   './dataset/001-SART-August2017-MB-50.csv'
+                   file_path
                    ]
     Yu_path = ['/Library/Java/JavaVirtualMachines/jdk1.8.0_171.jdk/Contents/Home',
                './res/saved_dataset',
@@ -195,6 +197,8 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument('-i', '--input', required=True,
+                        help='Input file')
     parser.add_argument('-st', '--st', type=float, required=True,
                         help='Similarity threshold for grouping function')
     parser.add_argument('-cores', '--cores', type=int, required=True,
