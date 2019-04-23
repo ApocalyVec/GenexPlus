@@ -159,7 +159,6 @@ def cluster(group, length, st, normalized_ts_dict, dist_type = 'eu'):
                 if dist < minSim:
                     minSim = dist
                     minRprst = rprst
-
             sim = math.sqrt(length) * st / 2
             if minSim <= sim:  # if the calculated min similarity is smaller than the
                 # similarity threshold, put subsequence in the similarity cluster keyed by the min representative
