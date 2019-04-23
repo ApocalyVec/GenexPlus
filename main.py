@@ -13,7 +13,7 @@ from visualize_sequences import plot_cluster, plot_query_result
 import matplotlib.pyplot as plt
 
 # Similarity Threshold
-st = 0.2
+
 
 if __name__ == '__main__':
     # TODO
@@ -27,10 +27,11 @@ if __name__ == '__main__':
     Leo_path = ['/Library/Java/JavaVirtualMachines/jdk1.8.0_151.jdk/Contents/Home',
                 '/Users/Leo/Documents/OneDrive/COLLEGE/COURSES/research/genex/genexPlus/test/txt',
                 '/Users/Leo/Documents/OneDrive/COLLEGE/COURSES/research/genex/genexPlus/2013e_001_2_channels_02backs.csv']
+    st = 0.2
     path = Yu_path
     os.environ['JAVA_HOME'] = path[0]
     # create a spark job
-    sc = SparkContext("local", "First App")
+    sc = SparkContext("local[4]", "First App")
     # TODO
     path_save_res = path[1]
     # if path exist, the job can't be executed
@@ -130,3 +131,5 @@ if __name__ == '__main__':
     query_result = filter_rdd.map(lambda clusters: query(query_sequence, querying_range, clusters, k, time_series_dict.value, exclude_overlapping, 0.5)).collect()
 
     plot_query_result(query_sequence, query_result, time_series_dict.value)
+
+    sc.stop()

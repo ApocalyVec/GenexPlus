@@ -38,10 +38,14 @@ def query(query_sequence, query_range, cluster, k, time_series_dict, exclude_ove
         print("Querying Cluster of length: " + str(len(get_data_for_timeSeriesObj(min_rprs, time_series_dict))))
         target_cluster = cluster[min_rprs]
         print('len of cluster is ' + str(len(target_cluster)))
+        print("sorting")
 
         # this sorting is taking a long time!
         target_cluster.sort(key=lambda cluster_sequence: sim_between_seq
         (query_sequence, get_data_for_timeSeriesObj(cluster_sequence, time_series_dict)))
+    #     use a heap?
+    #     use quickselect
+    #     similar question to k closet point to origin
 
     # where can we get none?
     if len(target_cluster) != 0:
