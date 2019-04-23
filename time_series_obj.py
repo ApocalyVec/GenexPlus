@@ -8,6 +8,9 @@ class TimeSeriesObj:
         self.group_in = group_in
         self.is_representative = is_representative
 
+    def get_length(self):
+        return self.end_point - self.start_point
+
     def set_group_represented(self, group_id):
         self.group_in = group_id
 

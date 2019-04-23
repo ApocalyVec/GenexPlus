@@ -1,9 +1,10 @@
 import math
+import random
 import shutil
 from pyspark import SparkContext
 import os
 
-from cluster_operations import cluster
+from cluster_operations import cluster, cluster_two_pass
 from data_operations import normalize_ts_with_min_max, get_data
 from group_operations import get_subsquences
 from group_operations import generate_source
@@ -22,15 +23,15 @@ if __name__ == '__main__':
     # /Users/yli14/Desktop/DatasetBrainWave/2013e_001_2_channels_02backs.csv
     # /usr/lib/jvm/java-1.8.0-openjdk-amd64
     # /Library/Java/JavaVirtualMachines/jdk1.8.0_171.jdk/Contents/Home
-    Yu_path = ['/usr/lib/jvm/java-1.8.0-openjdk-amd64',
-               './res/cluster',
-               './001-SART-August2017-MB-50.csv'
-               ]
+    server_path = ['/usr/lib/jvm/java-1.8.0-openjdk-amd64',
+                   './res/cluster',
+                   './001-SART-August2017-MB-50.csv'
+                   ]
     Leo_path = ['/Library/Java/JavaVirtualMachines/jdk1.8.0_151.jdk/Contents/Home',
                 '/Users/Leo/Documents/OneDrive/COLLEGE/COURSES/research/genex/genexPlus/test/txt',
-                '/Users/Leo/Documents/OneDrive/COLLEGE/COURSES/research/genex/genexPlus/2013e_001_2_channels_02backs.csv']
+                './001-SART-August2017-MB-50.csv']
     st = 0.2
-    path = Yu_path
+    path = Leo_path
     os.environ['JAVA_HOME'] = path[0]
     # create a spark job
     sc = SparkContext("local[4]", "First App")
@@ -70,13 +71,12 @@ if __name__ == '__main__':
 
     # In get_subsquences(x, 100, 110): we are grouping subsequences that are of length 90 to 110
 
-
     """
     ##### group
     group_rdd_res: list: items = (length, time series list) -> time series list: items = (id, start, end)
     """
 
-    grouping_range = (89, 92)
+    grouping_range = (89, 90)
     group_rdd = global_dict_rdd.flatMap(lambda x: get_subsquences(x, grouping_range[0], grouping_range[1])).map(
         lambda x: (x[0], [x[1:]])).reduceByKey(
         lambda a, b: a + b)
@@ -92,32 +92,25 @@ if __name__ == '__main__':
     # group_res = group_rdd.collect()
     # cluster(group_res[1][1], group_res[1][0], st, global_dict.value)  # testing group with length of 9
     """
+
+    # print("Test clustering")
+    # group_res = group_rdd.collect()
+    # # cluster_two_pass(group_res[1][1], group_res[1][0], st, global_dict.value)  # testing group with length of 9
+    # cluster(group_res[1][1], group_res[1][0], st, global_dict.value)  # testing group with length of 9
+
+
     print("Working on clustering")
 
-    cluster_rdd = group_rdd.map(lambda x: cluster(x[1], x[0], st, global_dict.value))
+    cluster_rdd = group_rdd.map(lambda x: cluster_two_pass(x[1], x[0], st, global_dict.value))
 
-    # cluster_rdd.saveAsPickleFile(path_save_res)  # save all the cluster to the hard drive
-    # cluster_rdd_reload = sc.pickleFile(path_save_res).collect()  # here we have all the clusters in memory
+    cluster_rdd.saveAsPickleFile(path_save_res)  # save all the cluster to the hard drive
+    cluster_rdd_reload = sc.pickleFile(path_save_res).collect()  # here we have all the clusters in memory
     # first_dict = cluster_rdd_reload[0]
     print("clustering done")
 
+
     # plot all the clusters
     # plot_cluster(cluster_rdd_reload, 2, time_series_dict, 5)
-
-
-
-
-    # '(001-SART-August2017-MB)_(211-Current-Item:-3)_(A-DC1)_(64434.0)_(105950.0)'
-    # '(2013e_001)_(100-0-Back)_(B-DC8)_(232665953.1250)'
-    query_id = '(001-SART-August2017-MB)_(211-Current-Item:-3)_(A-DC1)_(64434.0)_(105950.0)'
-    query_sequence = get_data(query_id, 24, 117, time_series_dict.value)  # get an example query
-    filter_rdd = cluster_rdd.filter(lambda x: exclude_same_id(x, query_id))
-    # raise exception if the query_range exceeds the grouping range
-    querying_range = (90, 91)
-    k = 5  # looking for k best matches
-    if querying_range[0] < grouping_range[0] or querying_range[1] > grouping_range[1]:
-        raise Exception("query_operations: query: Query range does not match group range")
-
 
     """
         ##### query
@@ -127,11 +120,35 @@ if __name__ == '__main__':
         The following line is for testing querying on one cluster
         # query_result = query(query_sequence, cluster_rdd_reload[0], k, time_series_dict.value)
 
-        """
-    # query_result = cluster_rdd.filter(lambda x: x).map(lambda clusters: query(query_sequence, querying_range, clusters, k, time_series_dict.value)).collect()
-    exclude_overlapping = True
-    query_result = filter_rdd.map(lambda clusters: query(query_sequence, querying_range, clusters, k, time_series_dict.value, exclude_overlapping, 0.5)).collect()
+    """
+    # # '(001-SART-August2017-MB)_(211-Current-Item:-3)_(A-DC1)_(64434.0)_(105950.0)'
+    # # '(2013e_001)_(100-0-Back)_(B-DC8)_(232665953.1250)'
+    # query_id = '(001-SART-August2017-MB)_(211-Current-Item:-3)_(A-DC1)_(64434.0)_(105950.0)'
+    # query_sequence = get_data(query_id, 24, 117, time_series_dict.value)  # get an example query
+    # filter_rdd = cluster_rdd.filter(lambda x: exclude_same_id(x, query_id))
+    # # raise exception if the query_range exceeds the grouping range
+    # querying_range = (90, 91)
+    # k = 5  # looking for k best matches
+    # if querying_range[0] < grouping_range[0] or querying_range[1] > grouping_range[1]:
+    #     raise Exception("query_operations: query: Query range does not match group range")
+    #
+    # # query_result = cluster_rdd.filter(lambda x: x).map(lambda clusters: query(query_sequence, querying_range, clusters, k, time_series_dict.value)).collect()
+    # exclude_overlapping = True
+    # query_result = filter_rdd.map(
+    #     lambda clusters: query(query_sequence, querying_range, clusters, k, time_series_dict.value, exclude_overlapping,
+    #                            0.5)).collect()
+    #
+    # plot_query_result(query_sequence, query_result, time_series_dict.value)
+    #
+    # sc.stop()
+    print("Using Twopass")
+    total_cluster_count = 0
+    for cluster_dic in cluster_rdd_reload:
 
-    plot_query_result(query_sequence, query_result, time_series_dict.value)
+        representative, cluster_subsequences = random.choice(list(cluster_dic.items()))
 
-    sc.stop()
+        cluster_length = representative.get_length()
+        total_cluster_count = total_cluster_count + len(cluster_dic.keys())
+
+        print("length " + str(cluster_length) + " has cluster count of " + str(len(cluster_dic.keys())))
+    print("Total cluster count is: " + str(total_cluster_count))

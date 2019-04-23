@@ -9,11 +9,11 @@ def exclude_same_id(cluster, query_id):
     for cur_rprs in cluster.keys():
         cur_list = cluster[cur_rprs]
         new_list = []
-        print('before filter size is ' + str(len(cur_list)))
+        # print('before filter size is ' + str(len(cur_list)))
         for ts_object in cur_list:
             if ts_object.id != query_id:
                 new_list.append(ts_object)
-        print('after filter size is ' + str(len(new_list)))
+        # print('after filter size is ' + str(len(new_list)))
         cluster[cur_rprs] = new_list
 
     return cluster
@@ -42,7 +42,7 @@ def exclude_overlapping(target_cluster, percentage, k):
                     used_time_series[ts_object.id].append((ts_object.start_point, ts_object.end_point))
                     new_target_cluster.append(ts_object)
                     k -= 1
-    print("len of result cluster is " + str(len(new_target_cluster)))
+    # print("len of result cluster is " + str(len(new_target_cluster)))
     return new_target_cluster
 
 

@@ -183,6 +183,9 @@ def cluster(group, length, st, normalized_ts_dict, dist_type = 'eu'):
                     ss.set_representative()
                     cluster_count += 1
 
+    # cluster_count = len(cluster.keys())
+    # print()
+
     return cluster
 
 def cluster_two_pass(group, length, st, normalized_ts_dict, dist_type = 'eu'):
@@ -209,7 +212,7 @@ def cluster_two_pass(group, length, st, normalized_ts_dict, dist_type = 'eu'):
     ssequences = []
 
     # waiting list for the sequences that are not close enough to be put into existing clusters, but also not far enough to be their own clusters
-    waiting_list = []
+    waiting_ssequences = []
 
     for g in group:
         tid = g[0]
@@ -230,6 +233,7 @@ def cluster_two_pass(group, length, st, normalized_ts_dict, dist_type = 'eu'):
 
     delimiter = '_'
     cluster_count = 0
+    sim = math.sqrt(length) * st / 2
 
     # first pass
     for ss in ssequences:
@@ -265,7 +269,6 @@ def cluster_two_pass(group, length, st, normalized_ts_dict, dist_type = 'eu'):
                     minSim = dist
                     minRprst = rprst
 
-            sim = math.sqrt(length) * st / 2
 
             if minSim <= sim:  # if the calculated min similarity is smaller than the
                 # similarity threshold, put subsequence in the similarity cluster keyed by the min representative
@@ -275,15 +278,54 @@ def cluster_two_pass(group, length, st, normalized_ts_dict, dist_type = 'eu'):
             # This is the key different between two-pass clustering and the previous clustering:
             # We see if the distance is not far enough to be it's own cluster
             elif minSim <= sim * 2:
-                waiting_list.append(ss)
+
+                waiting_ssequences.append(ss)
 
             else:
-
                 if ss not in cluster.keys():
                     cluster[ss] = [ss]
                     group_id = str(length) + delimiter + str(cluster_count)
                     ss.set_group_represented(group_id)
                     ss.set_representative()
                     cluster_count += 1
+
+    # second pass
+    for wss in waiting_ssequences:
+        if not cluster.keys():
+            raise Exception("cluster_operations.py: cluster_two_pass: no existing clusters, invalid second pass")
+        else:  # this is exact the same as the first pass, but we are not creating a wait list anymore
+            minSim = math.inf
+            minRprst = None
+            for rprst in list(cluster.keys()):
+                wss_raw_data = get_data(wss.id, wss.start_point, wss.end_point, normalized_ts_dict)
+                rprst_raw_data = get_data(rprst.id, rprst.start_point, rprst.end_point, normalized_ts_dict)
+
+                # check the distance type
+                if dist_type == 'eu':
+                    dist = euclidean(np.asarray(wss_raw_data), np.asarray(rprst_raw_data))
+                elif dist_type == 'ma':
+                    dist = cityblock(np.asarray(wss_raw_data), np.asarray(rprst_raw_data))
+                elif dist_type == 'mi':
+                    dist = minkowski(np.asarray(wss_raw_data), np.asarray(rprst_raw_data))
+                else: raise Exception("cluster_operations: cluster: invalid distance type: " + dist_type)
+
+                # update the minimal similarity
+                if dist < minSim:
+                    minSim = dist
+                    minRprst = rprst
+
+            if minSim <= sim:  # if the calculated min similarity is smaller than the
+                cluster[minRprst].append(wss)
+                wss.set_group_represented(minRprst.get_group_represented())
+            else:
+                if wss not in cluster.keys():
+                    cluster[wss] = [wss]
+                    group_id = str(length) + delimiter + str(cluster_count)
+                    wss.set_group_represented(group_id)
+                    wss.set_representative()
+                    cluster_count += 1
+
+    # cluster_count = len(cluster.keys())
+    # print()
 
     return cluster
