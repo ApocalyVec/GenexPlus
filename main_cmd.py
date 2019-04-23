@@ -93,7 +93,7 @@ def main(args):
             grouping_range = (89, 90)
         #         grouping_range = (1, length)
 
-        global_dict_rdd = sc.parallelize(res_list[1:], numSlices=2000)
+        global_dict_rdd = sc.parallelize(res_list[1:], numSlices=16)
         global_dict_rdd.saveAsPickleFile(path_save_res + '/dict/')
 
         # global_dict_res = global_dict_rdd.collect()
