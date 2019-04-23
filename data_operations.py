@@ -82,3 +82,14 @@ def normalize_ts_with_min_max(time_series_dict, global_min, global_max):
             normalized_time_series[ts_key].append((point - global_min) / (global_max - global_min))
 
     return normalized_time_series
+
+
+def find_k_smallest(target_cluster, query_sequence, k):
+    # TODO
+    """
+    use quickselect to find the k smallest element
+    :param target_cluster:
+    :param query_sequence:
+    :param k:
+    :return:
+    """

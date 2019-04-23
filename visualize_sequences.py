@@ -34,13 +34,14 @@ def plot_query_result(query_sequence, query_result, time_series_dict):
     """
 
     for sequence_list in query_result:
-        plt.figure(figsize=(15, 15))
-        plt.plot(query_sequence, label='QUERY')
+        if sequence_list:
+            plt.figure(figsize=(15, 15))
+            plt.plot(query_sequence, label='QUERY')
 
-        for ss in sequence_list:
-            plt.plot(get_data_for_timeSeriesObj(ss, time_series_dict),
-                     label='Rank' + str(sequence_list.index(ss) + 1) + ' id %s' % ss.get_group_represented() + ss.id + '_' + str(
-                         ss.start_point) + '_' + str(ss.end_point))
-            plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+            for ss in sequence_list:
+                plt.plot(get_data_for_timeSeriesObj(ss, time_series_dict),
+                         label='Rank' + str(sequence_list.index(ss) + 1) + ' id %s' % ss.get_group_represented() + ss.id + '_' + str(
+                             ss.start_point) + '_' + str(ss.end_point))
+                plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 
-        plt.show()
+            plt.show()
