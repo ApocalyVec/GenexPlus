@@ -165,6 +165,8 @@ def cluster(group, length, st, normalized_ts_dict, dist_type = 'eu'):
                 # similarity threshold, put subsequence in the similarity cluster keyed by the min representative
                 cluster[minRprst].append(ss)
                 ss.set_group_represented(minRprst.get_group_represented())
+
+
             else:
                 # if the minSim is greater than the similarity threshold, we create a new similarity group
                 # with this sequence being its representative
@@ -174,6 +176,109 @@ def cluster(group, length, st, normalized_ts_dict, dist_type = 'eu'):
                 #     # raise Exception('cluster_operations: clusterer: Trying to create new similarity cluster '
                 #     #                 'due to exceeding similarity threshold, target sequence is already a '
                 #     #                 'representative(key) in cluster. The sequence isz: ' + ss.toString())
+                if ss not in cluster.keys():
+                    cluster[ss] = [ss]
+                    group_id = str(length) + delimiter + str(cluster_count)
+                    ss.set_group_represented(group_id)
+                    ss.set_representative()
+                    cluster_count += 1
+
+    return cluster
+
+def cluster_two_pass(group, length, st, normalized_ts_dict, dist_type = 'eu'):
+    """
+    this is an alternative for the regular clustering algorithm.
+    It does two passes in generating clusters. More refined cluster will result from it
+
+    when makeing new representatives (clusters), it checks if the new representative's similarity is greater than
+    twice the similarity threshold (normal cap for creating new representative is just the 1*similarity threshold)
+    :param group:
+    :param length:
+    :param st:
+    :param normalized_ts_dict:
+    :param dist_type:
+    """
+    cluster = dict()
+
+    # get all seubsequences from time_series_dict
+    # at one time
+    # ???or maybe during group operation
+    # During group operation is better, because the data will be too large if
+    # we retrieve all of it
+
+    ssequences = []
+
+    # waiting list for the sequences that are not close enough to be put into existing clusters, but also not far enough to be their own clusters
+    waiting_list = []
+
+    for g in group:
+        tid = g[0]
+        start_point = g[1]
+        end_point = g[2]
+        ssequences.append(TimeSeriesObj(tid, start_point, end_point))
+
+    print("Clustering length of: " + str(length) + ", number of subsequences is " + str(len(ssequences)))
+
+    # group length validation
+    for time_series in ssequences:
+        # end_point and start_point
+        if time_series.end_point - time_series.start_point != length:
+            raise Exception("cluster_operations: clusterer: group length dismatch, len = " + str(length))
+
+    # randomize the sequence in the group to remove data-related bias
+    ssequences = randomize(ssequences)
+
+    delimiter = '_'
+    cluster_count = 0
+
+    # first pass
+    for ss in ssequences:
+        if not cluster.keys():
+            # if there is no item in the similarity cluster
+            # future delimiter
+            group_id = str(length) + delimiter + str(cluster_count)
+            ss.set_group_represented(group_id)
+            cluster[ss] = [ss]
+            ss.set_representative()
+            cluster_count += 1
+            # put the first sequence as the representative of the first cluster
+        else:
+            minSim = math.inf
+            minRprst = None  # TODO MinRprst should not be None, catch None exception!
+            # rprst is a time_series obj
+            for rprst in list(cluster.keys()):  # iterate though all the similarity clusters, rprst = representative
+                # ss is also a time_series obj
+                ss_raw_data = get_data(ss.id, ss.start_point, ss.end_point, normalized_ts_dict)
+                rprst_raw_data = get_data(rprst.id, rprst.start_point, rprst.end_point, normalized_ts_dict)
+
+                # check the distance type
+                if dist_type == 'eu':
+                    dist = euclidean(np.asarray(ss_raw_data), np.asarray(rprst_raw_data))
+                elif dist_type == 'ma':
+                    dist = cityblock(np.asarray(ss_raw_data), np.asarray(rprst_raw_data))
+                elif dist_type == 'mi':
+                    dist = minkowski(np.asarray(ss_raw_data), np.asarray(rprst_raw_data))
+                else: raise Exception("cluster_operations: cluster: invalid distance type: " + dist_type)
+
+                # update the minimal similarity
+                if dist < minSim:
+                    minSim = dist
+                    minRprst = rprst
+
+            sim = math.sqrt(length) * st / 2
+
+            if minSim <= sim:  # if the calculated min similarity is smaller than the
+                # similarity threshold, put subsequence in the similarity cluster keyed by the min representative
+                cluster[minRprst].append(ss)
+                ss.set_group_represented(minRprst.get_group_represented())
+
+            # This is the key different between two-pass clustering and the previous clustering:
+            # We see if the distance is not far enough to be it's own cluster
+            elif minSim <= sim * 2:
+                waiting_list.append(ss)
+
+            else:
+
                 if ss not in cluster.keys():
                     cluster[ss] = [ss]
                     group_id = str(length) + delimiter + str(cluster_count)
