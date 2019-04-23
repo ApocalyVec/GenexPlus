@@ -25,13 +25,16 @@ if __name__ == '__main__':
     # /Library/Java/JavaVirtualMachines/jdk1.8.0_171.jdk/Contents/Home
     server_path = ['/usr/lib/jvm/java-1.8.0-openjdk-amd64',
                    './res/cluster',
-                   './001-SART-August2017-MB-50.csv'
+                   './001-SART-August2017-MB.csv'
                    ]
+    Yu_path = ['/Library/Java/JavaVirtualMachines/jdk1.8.0_171.jdk/Contents/Home',
+               './res/saved_dataset',
+               './dataset/001-SART-August2017-MB.csv']
     Leo_path = ['/Library/Java/JavaVirtualMachines/jdk1.8.0_151.jdk/Contents/Home',
                 '/Users/Leo/Documents/OneDrive/COLLEGE/COURSES/research/genex/genexPlus/test/txt',
                 './001-SART-August2017-MB-50.csv']
     st = 0.2
-    path = Leo_path
+    path = Yu_path
     os.environ['JAVA_HOME'] = path[0]
     # create a spark job
     sc = SparkContext("local[4]", "First App")
@@ -63,7 +66,7 @@ if __name__ == '__main__':
     global_dict = sc.broadcast(normalized_ts_dict)
     time_series_dict = sc.broadcast(time_series_dict)
 
-    global_dict_rdd = sc.parallelize(res_list[1:]).cache()
+    global_dict_rdd = sc.parallelize(res_list[1:], numSlices= 1500)
     # global_dict_res = global_dict_rdd.collect()
     # finish grouping here, result in a key, value pair where
     # key is the length of sub-sequence, value is the [id of source time series, start_point, end_point]
