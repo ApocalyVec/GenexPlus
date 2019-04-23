@@ -20,9 +20,11 @@ if __name__ == '__main__':
     # Ask Leo to put his path to save pickle file
     # /Users/yli14/BrainWave/GenexPlus/001-SART-August2017-MB-200.csv
     # /Users/yli14/Desktop/DatasetBrainWave/2013e_001_2_channels_02backs.csv
-    Yu_path = ['/Library/Java/JavaVirtualMachines/jdk1.8.0_171.jdk/Contents/Home',
-               '/Users/yli14/BrainWave/GenexPlus/res/cluster',
-               '/Users/yli14/BrainWave/GenexPlus/001-SART-August2017-MB-50.csv'
+    # /usr/lib/jvm/java-1.8.0-openjdk-amd64
+    # /Library/Java/JavaVirtualMachines/jdk1.8.0_171.jdk/Contents/Home
+    Yu_path = ['/usr/lib/jvm/java-1.8.0-openjdk-amd64',
+               './res/cluster',
+               './001-SART-August2017-MB-50.csv'
                ]
     Leo_path = ['/Library/Java/JavaVirtualMachines/jdk1.8.0_151.jdk/Contents/Home',
                 '/Users/Leo/Documents/OneDrive/COLLEGE/COURSES/research/genex/genexPlus/test/txt',
