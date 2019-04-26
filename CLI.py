@@ -74,7 +74,7 @@ while 1:
             break
 
         # if args[0] == 'example':
-            
+
 
     print_formatted_text(message, style=style)
 
