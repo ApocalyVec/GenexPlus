@@ -50,7 +50,7 @@ def main(args):
 
     # sc = SparkContext("local[4]", "First App")
     # st = 0.25
-    new_path = re.match(r"./(.*)\.csv", path[2]).group(1)
+    new_path = re.match(r"(.*)\.csv", path[2]).group(1)
     path_save_res = path[1] + '/' + new_path + '_' + str(st)
     # if path exist, the job can't be executed
     if os.path.isdir(path_save_res):
