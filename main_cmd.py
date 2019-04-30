@@ -37,8 +37,8 @@ def main(args):
                './res/saved_dataset',
                './dataset/001-SART-August2017-MB-50.csv']
     Leo_path = ['/Library/Java/JavaVirtualMachines/jdk1.8.0_151.jdk/Contents/Home',
-                '/Users/Leo/Documents/OneDrive/COLLEGE/COURSES/research/genex/genexPlus/test/txt',
-                '/Users/Leo/Documents/OneDrive/COLLEGE/COURSES/research/genex/genexPlus/2013e_001_2_channels_02backs.csv']
+                './res/saved_dataset',
+                file_path]
 
     path = Server_path
     os.environ['JAVA_HOME'] = path[0]
@@ -50,7 +50,7 @@ def main(args):
 
     # sc = SparkContext("local[4]", "First App")
     # st = 0.25
-    new_path = re.match(r"./(.*)\.csv", path[2]).group(1)
+    new_path = re.match(r"(.*)\.csv", path[2]).group(1)
     path_save_res = path[1] + '/' + new_path + '_' + str(st)
     # if path exist, the job can't be executed
     if os.path.isdir(path_save_res):
@@ -139,7 +139,7 @@ def main(args):
         cluster_rdd = group_rdd.map(lambda x: cluster(x[1], x[0], st, global_dict.value))
 
         cluster_rdd.saveAsPickleFile(path_save_res + '/cluster/')  # save all the cluster to the hard drive
-        # cluster_rdd_reload = sc.pickleFile(path_save_res).collect()  # here we have all the clusters in memory
+        cluster_rdd_reload = sc.pickleFile(path_save_res).collect()  # here we have all the clusters in memory
         # first_dict = cluster_rdd_reload[0]
         cluster_end_time = time.time()
 
@@ -149,7 +149,7 @@ def main(args):
         print("clustering done, saved to dataset")
 
         # plot all the clusters
-        # plot_cluster(cluster_rdd_reload, 2, time_series_dict, 5)
+        plot_cluster(cluster_rdd_reload, 2, time_series_dict, 5)
 
         """
             ##### query
