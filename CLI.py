@@ -99,6 +99,10 @@ while 1:
                         pickle.dump(gp_project, gp_project_file)  # save gp_project object to gp_project_file
                     # else isCreateNewProject == 'n' or 'N' or 'No' or 'no':
 
+        elif args[0] == 'close':  # close opened gp_project
+            if gp_project is not None:
+                print("Closing" + gp_project.get_project_name())
+                gp_project = None
 
         elif args[0] == 'load':  # for user input 'load'
             print("loading")
