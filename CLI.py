@@ -239,6 +239,9 @@ while 1:
                     for entry in gp_project.get_load_history():
                         print(entry)
 
+            elif args[0] == 'query':
+                print("querying")
+
             elif args[0] == 'exit':  # for user input 'exit'
                 message = FormattedText([
                     ('class:normal', 'Exited'),
