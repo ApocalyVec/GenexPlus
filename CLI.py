@@ -25,6 +25,7 @@ import pickle
 from pyspark import SparkContext
 
 from GenexPlusProject import GenexPlusProject
+from cluster_operations import cluster
 from data_operations import normalize_ts_with_min_max
 from group_operations import generate_source, get_subsquences
 
@@ -52,9 +53,15 @@ def gp_not_opened_error():
     ])
     print_formatted_text(err_msg, style=style)
 
-def sparkContextNotSetError():
+def spark_context_not_set_error():
     err_msg = FormattedText([
         ('class:error', 'Spark Context not set, please use set command to set spark context'),
+    ])
+    print_formatted_text(err_msg, style=style)
+
+def no_group_before_cluster_error():
+    err_msg = FormattedText([
+        ('class:error', 'Please group the data before clustering'),
     ])
     print_formatted_text(err_msg, style=style)
 
@@ -177,7 +184,7 @@ while 1:
                 if gp_project is None:
                     gp_not_opened_error()
                 elif sc is None:
-                    sparkContextNotSetError()
+                    spark_context_not_set_error()
                 else:
                     global_dict = sc.broadcast(gp_project.normalized_ts_dict)
                     time_series_dict = sc.broadcast(gp_project.time_series_dict)
@@ -202,13 +209,28 @@ while 1:
 
                     print("grouping done, saved to dataset")
 
-            # elif args[0] == 'group':  # group all loaded data
-            #     if gp_project == None:
-            #         err_msg = FormattedText([
-            #             ('class:error', 'No GenexPlus Project Opened, please use the command open to open a GenexPlus Project'),
-            #         ])
-            #         print_formatted_text(err_msg, style=style)
-            #     else:
+            elif args[0] == 'cluster':
+                if gp_project is None:
+                    gp_not_opened_error()
+                elif sc is None:
+                    spark_context_not_set_error()
+                elif gp_project.res_list is None:
+                    no_group_before_cluster_error()
+                else:
+                    print("Working on clustering")
+                    cluster_start_time = time.time()
+                    # TODO Question: why do we call cluster on the global_dict?
+                    cluster_rdd = group_rdd.map(lambda x: cluster(x[1], x[0], 0.1, global_dict.value))  # TODO have the user decide the similarity threshold
+
+                    cluster_rdd.collect()
+                    # first_dict = cluster_rdd_reload[0]
+                    cluster_end_time = time.time()
+
+                    print('clustering of timeseries from ' + str(grouping_range[0]) + ' to ' + str(
+                        grouping_range[1]) + ' using ' + str(cluster_end_time - cluster_start_time) + ' seconds')
+
+                    print("clustering done, saved to dataset")
+
 
             elif args[0] == 'show':  # TODO
                 if gp_project is None:
