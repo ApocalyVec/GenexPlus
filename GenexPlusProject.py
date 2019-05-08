@@ -1,4 +1,7 @@
 from __future__ import unicode_literals, print_function
+
+import datetime
+
 from prompt_toolkit.formatted_text import FormattedText
 from prompt_toolkit.styles import Style
 
@@ -13,30 +16,31 @@ class GenexPlusProject:
 
     user may load data into a workspace, group and cluster the data that has already been loaded
     """
-    def __init__(self, name):
-        self.project_name = name
-        self.groups = None
+    def __init__(self, project_name):
+        self.project_name = project_name
+        self.time_series_dict = None
+        self.normalized_ts_dict = None
+        self.res_list = None
+
+        # group data
+        self.group_rdd_res = None
+
+        self.loadHistory = list()
 
     def get_project_name(self):
         return self.project_name
 
-    def load_data(self, filename, format='original'):
-        msg = FormattedText([
-            ('class:normal', 'loading'),
-            ('', ' '),
-            ('class:prompt', filename),
-            # ('class:bbb', 'fileName'),
-        ])
+    def get_load_history(self):
+        return self.loadHistory
 
+    def save_time_series(self, time_series_dict, normalized_ts_dict, res_list):  # load raw and normalized data
+        self.time_series_dict = time_series_dict
+        self.normalized_ts_dict = normalized_ts_dict
+        self.res_list = res_list
+        # self.loadHistory.append(datetime.datetime.now() + ': ' + dataFN)
 
-
-
-
-
-
-
-
-        return msg
+    def set_group_data(self, group_rdd_res):
+        self.group_rdd_res = group_rdd_res
 
     def invalid_load_prompt(self):
         msg = FormattedText([
