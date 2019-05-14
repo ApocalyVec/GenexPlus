@@ -20,7 +20,7 @@ class GenexPlusProject:
         self.project_name = project_name
         self.time_series_dict = None
         self.normalized_ts_dict = None
-        self.res_list = None
+        self.time_series_list = None
 
         # group data
         self.group_rdd_res = None
@@ -33,10 +33,10 @@ class GenexPlusProject:
     def get_load_history(self):
         return self.loadHistory
 
-    def save_time_series(self, time_series_dict, normalized_ts_dict, res_list):  # load raw and normalized data
+    def save_time_series(self, time_series_dict, normalized_ts_dict, time_series_list):  # load raw and normalized data
         self.time_series_dict = time_series_dict
         self.normalized_ts_dict = normalized_ts_dict
-        self.res_list = res_list
+        self.time_series_list = time_series_list
         # self.loadHistory.append(datetime.datetime.now() + ': ' + dataFN)
 
     def set_group_data(self, group_rdd_res):

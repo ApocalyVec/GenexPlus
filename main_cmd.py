@@ -40,7 +40,7 @@ def main(args):
                 './res/saved_dataset',
                 file_path]
 
-    path = Server_path
+    path = Leo_path
     os.environ['JAVA_HOME'] = path[0]
     # create a spark job
     cores = args.cores

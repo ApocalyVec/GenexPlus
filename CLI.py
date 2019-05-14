@@ -22,12 +22,15 @@ from prompt_toolkit.styles import Style
 import pickle
 
 # commands
-from pyspark import SparkContext
+from pyspark import SparkContext, SparkConf
 
 from GenexPlusProject import GenexPlusProject
 from cluster_operations import cluster
-from data_operations import normalize_ts_with_min_max
+from data_operations import normalize_ts_with_min_max, get_data
+from filter_operation import exclude_same_id
 from group_operations import generate_source, get_subsquences
+from query_operations import query
+from visualize_sequences import plot_query_result
 
 GPKeywords = ['load', 'group', 'cluster', 'query', 'plot', 'help', 'exit', 'open', 'set']
 
@@ -79,7 +82,6 @@ GPCompleter = WordCompleter(['load', 'group', 'cluster', 'query', 'plot'],
 gp_project = None  # GenexPlus workspace
 
 java_home_path = None
-num_cores = None
 sc = None
 
 features_to_append = [0, 1, 2, 3, 4]  # TODO what is this?
@@ -142,19 +144,21 @@ while 1:
 
 
             elif args[0] == 'set':  # close opened gp_project
-                if len(args) != 3:  # if wronge number of arguments is given
+                if len(args) != 2:  # if wronge number of arguments is given
                     err_msg = FormattedText([
                         ('class:error',
-                         'Wrong number of arguments, please specify the path to Java Home and the number of cores'),
+                         'Wrong number of arguments, please specify the path to Java Home (the number of cores is no '
+                         'longer needed, the program will use all available cores)'),
                     ])
                     print_formatted_text(err_msg, style=style)
                 else:
                     java_home_path = args[1]
-                    num_cores = args[2]
                     os.environ['JAVA_HOME'] = java_home_path
-                    sc = SparkContext('' + 'local' + '[' + str(num_cores) + ']' + '', "GenexPlus")
+
+                    conf = SparkConf().setAppName("GenexPlus").setMaster("local[*]")  # using all available cores
+                    sc = SparkContext(conf=conf)
+                    # sc = SparkContext('' + 'local' + '[' + str(num_cores) + ']' + '', "GenexPlus")
                     print("Java home set at " + java_home_path)
-                    print("Number of cores set to " + num_cores)
 
             elif args[0] == 'load':  # load given csv file
                 if gp_project is None:
@@ -167,7 +171,7 @@ while 1:
                         ])
                         print_formatted_text(err_msg, style=style)
                     else:
-                        res_list, time_series_dict, global_min, global_max = generate_source(args[1],
+                        time_series_list, time_series_dict, global_min, global_max = generate_source(args[1],
                                                                                              features_to_append)
                         print("loaded file " + args[1])
                         print("Global Max is " + str(global_max))
@@ -175,7 +179,7 @@ while 1:
                         normalized_ts_dict = normalize_ts_with_min_max(time_series_dict, global_min, global_max)
 
                         # gp_project.save_time_series(time_series_dict, normalized_ts_dict, args[1])  # TODO include load history
-                        gp_project.save_time_series(time_series_dict, normalized_ts_dict, res_list)
+                        gp_project.save_time_series(time_series_dict, normalized_ts_dict, time_series_list)
 
             elif args[0] == 'save':  # TODO save changes to the GenexPlusProject pickle file
                 print("saved")
@@ -188,7 +192,7 @@ while 1:
                 else:
                     global_dict = sc.broadcast(gp_project.normalized_ts_dict)
                     time_series_dict = sc.broadcast(gp_project.time_series_dict)
-                    global_dict_rdd = sc.parallelize(res_list[1:], numSlices=16)
+                    global_dict_rdd = sc.parallelize(gp_project.time_series_list[1:], numSlices=16)  # TODO not practicle on larger datasets
 
                     # TODO only grouping full length
                     grouping_range = (1, max([len(v) for v in global_dict.value.values()]))
@@ -214,7 +218,7 @@ while 1:
                     gp_not_opened_error()
                 elif sc is None:
                     spark_context_not_set_error()
-                elif gp_project.res_list is None:
+                elif gp_project.time_series_dict is None:
                     no_group_before_cluster_error()
                 else:
                     print("Working on clustering")
@@ -232,15 +236,32 @@ while 1:
                     print("clustering done, saved to dataset")
 
 
-            elif args[0] == 'show':  # TODO
-                if gp_project is None:
-                    gp_not_opened_error()
-                else:
-                    for entry in gp_project.get_load_history():
-                        print(entry)
+            # elif args[0] == 'show':  # TODO
+            #     if gp_project is None:
+            #         gp_not_opened_error()
+            #     else:
+            #         for entry in gp_project.get_load_history():
+            #             print(entry)
 
             elif args[0] == 'query':
-                print("querying")
+                print("querying ")
+
+                query_id = '(2013e_001)_(100-0-Back)_(A-DC4)_(232665953.1250)_(232695953.1250)'
+                query_sequence = get_data(query_id, 24, 117, time_series_dict.value)  # get an example query
+                filter_rdd = cluster_rdd.filter(lambda x: exclude_same_id(x, query_id))
+                # raise exception if the query_range exceeds the grouping range
+                querying_range = (90, 91)
+                k = 5  # looking for k best matches
+                if querying_range[0] < grouping_range[0] or querying_range[1] > grouping_range[1]:
+                    raise Exception("query_operations: query: Query range does not match group range")
+
+                # query_result = cluster_rdd.filter(lambda x: x).map(lambda clusters: query(query_sequence, querying_range, clusters, k, time_series_dict.value)).collect()
+                exclude_overlapping = True
+                query_result = filter_rdd.map(
+                    lambda clusters: query(query_sequence, querying_range, clusters, k, time_series_dict.value, exclude_overlapping,
+                                           0.5)).collect()
+
+                plot_query_result(query_sequence, query_result, time_series_dict.value)
 
             elif args[0] == 'exit':  # for user input 'exit'
                 message = FormattedText([
@@ -248,6 +269,10 @@ while 1:
                 ])
 
                 print_formatted_text(message, style=style)
+
+                # cleaning up
+                if sc is not None:
+                    sc.stop()
                 break
 
     print_formatted_text(message, style=style)
