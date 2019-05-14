@@ -7,6 +7,21 @@ load: load target data set in to the workspace - put data set onto slaves and do
 
 set: set sparkcontext of the system, this is required for the following operations: group, cluster and query
     arguements: 1. path to java home, 2. number of cores
+
+group: group the loaded time series
+
+cluster: cluster the grouped subsequences
+
+query:
+
+
+Commands for getting information:
+
+get <something>
+
+something can be:
+    id: get all
+
 """
 import os
 import time
@@ -56,17 +71,27 @@ def gp_not_opened_error():
     ])
     print_formatted_text(err_msg, style=style)
 
+
 def spark_context_not_set_error():
     err_msg = FormattedText([
         ('class:error', 'Spark Context not set, please use set command to set spark context'),
     ])
     print_formatted_text(err_msg, style=style)
 
+
 def no_group_before_cluster_error():
     err_msg = FormattedText([
         ('class:error', 'Please group the data before clustering'),
     ])
     print_formatted_text(err_msg, style=style)
+
+
+def get_arg_error():
+    err_msg = FormattedText([
+        ('class:error', 'Please group the data before clustering'),
+    ])
+    print_formatted_text(err_msg, style=style)
+
 
 class GPCompleter(Completer):
     def get_completions(self, document, complete_evennt):
@@ -120,7 +145,8 @@ while 1:
                 else:
                     try:
                         print("Opening " + args[1])
-                        gp_project_file = open(args[1] + '.pickle', "rb")
+                        gp_project_fn = args[1] + '.pickle'
+                        gp_project_file = open(gp_project_fn, "rb")
                         gp_project = pickle.load(gp_project_file)
                     except FileNotFoundError:
                         isCreateNewProject = prompt("Project " + args[
@@ -172,7 +198,7 @@ while 1:
                         print_formatted_text(err_msg, style=style)
                     else:
                         time_series_list, time_series_dict, global_min, global_max = generate_source(args[1],
-                                                                                             features_to_append)
+                                                                                                     features_to_append)
                         print("loaded file " + args[1])
                         print("Global Max is " + str(global_max))
                         print("Global Min is " + str(global_min))
@@ -182,6 +208,10 @@ while 1:
                         gp_project.save_time_series(time_series_dict, normalized_ts_dict, time_series_list)
 
             elif args[0] == 'save':  # TODO save changes to the GenexPlusProject pickle file
+
+                gp_project_file = open(gp_project_fn, "wb")
+                pickle.dump(gp_project, gp_project_file)
+
                 print("saved")
 
             elif args[0] == 'group':
@@ -192,7 +222,8 @@ while 1:
                 else:
                     global_dict = sc.broadcast(gp_project.normalized_ts_dict)
                     time_series_dict = sc.broadcast(gp_project.time_series_dict)
-                    global_dict_rdd = sc.parallelize(gp_project.time_series_list[1:], numSlices=16)  # TODO not practicle on larger datasets
+                    global_dict_rdd = sc.parallelize(gp_project.time_series_list[1:],
+                                                     numSlices=16)  # TODO not practicle on larger datasets
 
                     # TODO only grouping full length
                     grouping_range = (1, max([len(v) for v in global_dict.value.values()]))
@@ -224,7 +255,8 @@ while 1:
                     print("Working on clustering")
                     cluster_start_time = time.time()
                     # TODO Question: why do we call cluster on the global_dict?
-                    cluster_rdd = group_rdd.map(lambda x: cluster(x[1], x[0], 0.1, global_dict.value))  # TODO have the user decide the similarity threshold
+                    cluster_rdd = group_rdd.map(lambda x: cluster(x[1], x[0], 0.1,
+                                                                  global_dict.value))  # TODO have the user decide the similarity threshold
 
                     cluster_rdd.collect()
                     # first_dict = cluster_rdd_reload[0]
@@ -236,12 +268,26 @@ while 1:
                     print("clustering done, saved to dataset")
 
 
-            # elif args[0] == 'show':  # TODO
-            #     if gp_project is None:
-            #         gp_not_opened_error()
-            #     else:
-            #         for entry in gp_project.get_load_history():
-            #             print(entry)
+            elif args[0] == 'get':
+                if gp_project is None:
+                    gp_not_opened_error()
+                    continue
+
+                if len(args) != 2:
+                    get_arg_error()
+                else:
+                    if args[1] == 'id':
+                        if gp_project.time_series_dict is not None:
+                            for key in gp_project.time_series_dict.keys():
+                                print(key)
+                        else:
+                            print("No time series ID available since no time series has been loaded")
+                            print("Use the load command to load time series")
+
+                    # elif args[1] == ''  # TODO add more argument type to the get command
+
+                    else:
+                        print(args[1] + " is not a valid arguement for the command get")
 
             elif args[0] == 'query':
                 print("querying ")
@@ -258,7 +304,8 @@ while 1:
                 # query_result = cluster_rdd.filter(lambda x: x).map(lambda clusters: query(query_sequence, querying_range, clusters, k, time_series_dict.value)).collect()
                 exclude_overlapping = True
                 query_result = filter_rdd.map(
-                    lambda clusters: query(query_sequence, querying_range, clusters, k, time_series_dict.value, exclude_overlapping,
+                    lambda clusters: query(query_sequence, querying_range, clusters, k, time_series_dict.value,
+                                           exclude_overlapping,
                                            0.5)).collect()
 
                 plot_query_result(query_sequence, query_result, time_series_dict.value)
