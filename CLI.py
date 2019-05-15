@@ -4,6 +4,7 @@ prompt_toolkit: https://python-prompt-toolkit.readthedocs.io/en/master/pages/pri
 open: will open existing workspace. If designated workspace doesn't exist, it will notify user a new
     ex: $ open my_project
 load: load target data set in to the workspace - put data set onto slaves and do the grouping
+    load command does not allow duplicate IDs
 
 set: set sparkcontext of the system, this is required for the following operations: group, cluster and query
     arguements: 1. path to java home, 2. number of cores
@@ -39,6 +40,7 @@ import pickle
 # commands
 from pyspark import SparkContext, SparkConf
 
+from CLIExceptions import DuplicateIDError
 from GenexPlusProject import GenexPlusProject
 from cluster_operations import cluster
 from data_operations import normalize_ts_with_min_max, get_data
@@ -89,6 +91,13 @@ def no_group_before_cluster_error():
 def get_arg_error():
     err_msg = FormattedText([
         ('class:error', 'Please group the data before clustering'),
+    ])
+    print_formatted_text(err_msg, style=style)
+
+def load_file_not_found_error(missing_file):
+    err_msg = FormattedText([
+        ('class:error',
+         'File ' + missing_file + ' not found'),
     ])
     print_formatted_text(err_msg, style=style)
 
@@ -196,7 +205,11 @@ while 1:
                              'Wrong number of arguments, please specify the path to the the data you wish to load'),
                         ])
                         print_formatted_text(err_msg, style=style)
+
+                    elif not os.path.isfile(args[1]):
+                        load_file_not_found_error(args[1])
                     else:
+
                         time_series_list, time_series_dict, global_min, global_max = generate_source(args[1],
                                                                                                      features_to_append)
                         print("loaded file " + args[1])
@@ -205,7 +218,17 @@ while 1:
                         normalized_ts_dict = normalize_ts_with_min_max(time_series_dict, global_min, global_max)
 
                         # gp_project.save_time_series(time_series_dict, normalized_ts_dict, args[1])  # TODO include load history
-                        gp_project.load_time_series(time_series_dict, normalized_ts_dict, time_series_list)
+                        try:
+                            gp_project.load_time_series(time_series_dict, normalized_ts_dict, time_series_list)
+                        except DuplicateIDError as e:
+                            err_msg = FormattedText([
+                                ('class:error',
+                                 'Error: duplicate ID(s) found in existing time series and newly loaded time series, dupplicate ID(s):'),
+                                ('class:error', str(list(((duplicate_id + "\n") for duplicate_id in e.duplicate_id_list))))
+                            ])
+
+                            print_formatted_text(err_msg, style=style)
+
 
             elif args[0] == 'save':  # TODO save changes to the GenexPlusProject pickle file
 
@@ -223,7 +246,7 @@ while 1:
                     global_dict = sc.broadcast(gp_project.normalized_ts_dict)
                     time_series_dict = sc.broadcast(gp_project.time_series_dict)
                     global_dict_rdd = sc.parallelize(gp_project.time_series_list[1:],
-                                                     numSlices=128)  # TODO not practicle on larger datasets
+                                                     numSlices=128)  # change the number of slices to mitigate larger datasets
 
                     # TODO only grouping full length
                     grouping_range = (1, max([len(v) for v in global_dict.value.values()]))
@@ -260,6 +283,8 @@ while 1:
 
                     cluster_rdd.collect()
                     # first_dict = cluster_rdd_reload[0]
+                    gp_project.set_cluster_data(cluster_rdd)  # save cluster information to the projecty
+
                     cluster_end_time = time.time()
 
                     print('clustering of timeseries from ' + str(grouping_range[0]) + ' to ' + str(
@@ -284,7 +309,7 @@ while 1:
                             print("No time series ID available since no time series has been loaded")
                             print("Use the load command to load time series")
                     elif args[1] == 'log':
-                        print(gp_project.log)
+                        gp_project.print_log()
                     # elif args[1] == ''  # TODO add more argument type to the get command
 
                     else:
