@@ -205,7 +205,7 @@ while 1:
                         normalized_ts_dict = normalize_ts_with_min_max(time_series_dict, global_min, global_max)
 
                         # gp_project.save_time_series(time_series_dict, normalized_ts_dict, args[1])  # TODO include load history
-                        gp_project.save_time_series(time_series_dict, normalized_ts_dict, time_series_list)
+                        gp_project.load_time_series(time_series_dict, normalized_ts_dict, time_series_list)
 
             elif args[0] == 'save':  # TODO save changes to the GenexPlusProject pickle file
 
@@ -223,7 +223,7 @@ while 1:
                     global_dict = sc.broadcast(gp_project.normalized_ts_dict)
                     time_series_dict = sc.broadcast(gp_project.time_series_dict)
                     global_dict_rdd = sc.parallelize(gp_project.time_series_list[1:],
-                                                     numSlices=16)  # TODO not practicle on larger datasets
+                                                     numSlices=128)  # TODO not practicle on larger datasets
 
                     # TODO only grouping full length
                     grouping_range = (1, max([len(v) for v in global_dict.value.values()]))
@@ -283,7 +283,8 @@ while 1:
                         else:
                             print("No time series ID available since no time series has been loaded")
                             print("Use the load command to load time series")
-
+                    elif args[1] == 'log':
+                        print(gp_project.log)
                     # elif args[1] == ''  # TODO add more argument type to the get command
 
                     else:
