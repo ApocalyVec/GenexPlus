@@ -29,7 +29,7 @@ class GenexPlusProject:
         self.time_series_list = None
 
         # gp project info
-        # self.time_series_status_dict = None
+        self.time_series_status_dict = {}
 
         # group data
         self.group_rdd_res = None
@@ -71,11 +71,10 @@ class GenexPlusProject:
 
         # write the load action just did to log
         self.write_to_log('load', time_series_dict.keys())  # log only contains the IDs that are loaded
-        # self.log[str(datetime.datetime.now())] =
-        #
-        # for id in time_series_dict.keys():
-        #     load_log_msg = load_log_msg + id + '\n'
-        # self.log.append(load_log_msg)
+
+        # set the just loaded time series status to 'loaded'
+        for id in time_series_dict.keys():
+            self.time_series_status_dict[id] = 'loaded'
 
     def write_to_log(self, action, data):
         if action not in self.log.keys():
@@ -90,16 +89,38 @@ class GenexPlusProject:
                 for load_entry in action_entries:  # load_entry: tuple (time stamp string, list of id's)
                     print("Loaded the following time series at " + str(load_entry[0]) + " :")
                     for id in load_entry[1]:
-                        print(id)
+                        print('     ' + id)
+            if action == 'group':
+                for group_entry in action_entries:  # load_entry: tuple (time stamp string, list of id's)
+                    print("Grouped the following time series at " + str(group_entry[0]) + " :")
+                    for id in group_entry[1]:
+                        print('     ' + id)
 
         # print(self.log)
+    def print_ts(self):
+        """
+        print the ids and status of all the loaded time series
+        """
+        if len(self.time_series_status_dict.keys()) != 0:  # if there are loaded time series
+            print('time series ID   Status')
+            for ts_id, ts_status in self.time_series_status_dict.items():
+                print(ts_id + '     ' + ts_status)
+        else:
+            print("No time series ID available since no time series has been loaded")
+            print("Use the load command to load time series")
 
-    def set_group_data(self, group_rdd_res):
+    def set_group_data(self, group_rdd_res, group_time):
         self.group_rdd_res = group_rdd_res
+        # self.write_to_log('group', (self.time_series_dict.keys(), group_time))
 
+        self.write_to_log('group', (self.time_series_dict.keys()))
 
-    def set_cluster_data(self, cluster_rdd_res):
-        self.cluster_rdd_res = cluster_rdd_res
+        # set the just grouped time series status to 'grouped'
+        for id in self.time_series_status_dict:
+            self.time_series_status_dict[id] = 'grouped'
+
+    def set_cluster_data(self, cluster_rdd):
+        self.cluster_rdd_res = cluster_rdd
 
     def invalid_load_prompt(self):
         msg = FormattedText([

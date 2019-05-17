@@ -10,6 +10,7 @@ set: set sparkcontext of the system, this is required for the following operatio
     arguements: 1. path to java home, 2. number of cores
 
 group: group the loaded time series
+    group function will check if a time series with given id is grouped already, it will only group time series that are at status: loaded
 
 cluster: cluster the grouped subsequences
 
@@ -21,7 +22,8 @@ Commands for getting information:
 get <something>
 
 something can be:
-    id: get all
+    id: get the IDs and the status of all the loaded time series
+    log
 
 """
 import os
@@ -243,6 +245,9 @@ while 1:
                 elif sc is None:
                     spark_context_not_set_error()
                 else:
+                    # only group the time series that are at status: loaded
+                    # ts_dict_to_be_grouped = gp_project.get_ungrouped_ts_dict()
+
                     global_dict = sc.broadcast(gp_project.normalized_ts_dict)
                     time_series_dict = sc.broadcast(gp_project.time_series_dict)
                     global_dict_rdd = sc.parallelize(gp_project.time_series_list[1:],
@@ -263,7 +268,7 @@ while 1:
                         group_end_time - group_start_time) + ' seconds')
                     group_rdd_res = group_rdd.collect()
 
-                    gp_project.set_group_data(group_rdd_res)
+                    gp_project.set_group_data(group_rdd_res, (group_end_time - group_start_time))
 
                     print("grouping done, saved to dataset")
 
@@ -281,7 +286,7 @@ while 1:
                     cluster_rdd = group_rdd.map(lambda x: cluster(x[1], x[0], 0.1,
                                                                   global_dict.value))  # TODO have the user decide the similarity threshold
 
-                    cluster_rdd.collect()
+                    # cluster_rdd_collected = cluster_rdd.collect()
                     # first_dict = cluster_rdd_reload[0]
                     gp_project.set_cluster_data(cluster_rdd)  # save cluster information to the projecty
 
@@ -301,13 +306,9 @@ while 1:
                 if len(args) != 2:
                     get_arg_error()
                 else:
-                    if args[1] == 'id':
-                        if gp_project.time_series_dict is not None:
-                            for key in gp_project.time_series_dict.keys():
-                                print(key)
-                        else:
-                            print("No time series ID available since no time series has been loaded")
-                            print("Use the load command to load time series")
+                    if args[1] == 'ts':  # get the ids and status of all the loaded time series
+                        gp_project.print_ts()
+
                     elif args[1] == 'log':
                         gp_project.print_log()
                     # elif args[1] == ''  # TODO add more argument type to the get command
@@ -315,12 +316,21 @@ while 1:
                     else:
                         print(args[1] + " is not a valid arguement for the command get")
 
-            elif args[0] == 'query':
+
+            elif args[0] == 'query':  # TODO check if the ts's are clustered
+                # resolve picked query
+
+                # if len(args) != 4 or len(args) != 5:
+                #
+                #
+                # if args[1] == 'bf':
+                #
+
                 print("querying ")
 
                 query_id = '(2013e_001)_(100-0-Back)_(A-DC4)_(232665953.1250)_(232695953.1250)'
                 query_sequence = get_data(query_id, 24, 117, time_series_dict.value)  # get an example query
-                filter_rdd = cluster_rdd.filter(lambda x: exclude_same_id(x, query_id))
+                filter_rdd = gp_project.cluster_rdd_res.filter(lambda x: exclude_same_id(x, query_id))
                 # raise exception if the query_range exceeds the grouping range
                 querying_range = (90, 91)
                 k = 5  # looking for k best matches
