@@ -20,6 +20,7 @@ def query(query_sequence, query_range, cluster, k, time_series_dict, exclude_ove
     min_dist = math.inf
     target_cluster = []
     for cur_rprs in cluster.keys():
+        # print("actually querying")
         # print('end point is' + str(cur_rprs.end_point))
         # print('start point is' + str(cur_rprs.start_point))
         # TODO do we want to get raw data here, or set the raw in timeSeriesObj before calling query (no parsing)

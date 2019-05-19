@@ -43,6 +43,8 @@ class GenexPlusProject:
     def get_project_name(self):
         return self.project_name
 
+    def set_project_name(self, name):
+        self.project_name = name
 
 
     def load_time_series(self, time_series_dict, normalized_ts_dict, time_series_list):  # load raw and normalized data
