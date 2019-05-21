@@ -1,5 +1,6 @@
 from group_operations import generate_source
 from dtaidistance import dtw  # source code https://github.com/wannesm/dtaidistance
+import datetime
 
 features_to_append = [0, 1, 2, 3, 4]
 res_list, time_series_dict, global_min, global_max = generate_source('2013e_001_2_channels_02backs.csv', features_to_append)
@@ -13,6 +14,8 @@ def best_match_ts(query, ts_dict):
 
     best_match = dict()
 
+    start_time = datetime.datetime.now()
+
     for key, value in ts_dict.items():
         candidates = slice_list(value, query_len)
 
@@ -24,6 +27,9 @@ def best_match_ts(query, ts_dict):
                 best_match['value'] = candidates[i]
                 best_match['distance'] = distance
                 best_match['best_path'] = dtw.best_path(paths)
+
+    end_time = datetime.datetime.now()
+    print("Time period of the execution for the brute_force: " + str((end_time - start_time).seconds))
 
     return best_match
 

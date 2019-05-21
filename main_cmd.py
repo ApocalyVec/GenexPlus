@@ -39,8 +39,11 @@ def main(args):
     Leo_path = ['/Library/Java/JavaVirtualMachines/jdk1.8.0_151.jdk/Contents/Home',
                 './res/saved_dataset',
                 file_path]
+    Yuncong_path = ['/Library/Java/JavaVirtualMachines/jdk1.8.0_161.jdk/Contents/Home',
+                    './res/saved_dataset',
+                    file_path]
 
-    path = Leo_path
+    path = Yuncong_path
     os.environ['JAVA_HOME'] = path[0]
     # create a spark job
     cores = args.cores
@@ -149,7 +152,7 @@ def main(args):
         print("clustering done, saved to dataset")
 
         # plot all the clusters
-        plot_cluster(cluster_rdd_reload, 2, time_series_dict, 5)
+        # plot_cluster(cluster_rdd_reload, 2, time_series_dict, 5)
 
         """
             ##### query
