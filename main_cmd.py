@@ -43,7 +43,7 @@ def main(args):
                     './res/saved_dataset',
                     file_path]
 
-    path = Yuncong_path
+    path = Server_path
     os.environ['JAVA_HOME'] = path[0]
     # create a spark job
     cores = args.cores
@@ -177,24 +177,26 @@ def main(args):
         # print("Total cluster count is: " + str(total_cluster_count))
 
         # # '(001-SART-August2017-MB)_(211-Current-Item:-3)_(A-DC1)_(64434.0)_(105950.0)'
-        # # '(2013e_001)_(100-0-Back)_(B-DC8)_(232665953.1250)'
-        # query_id = '(001-SART-August2017-MB)_(211-Current-Item:-3)_(A-DC1)_(64434.0)_(105950.0)'
-        # query_sequence = get_data(query_id, 24, 117, time_series_dict.value)  # get an example query
-        # filter_rdd = cluster_rdd.filter(lambda x: exclude_same_id(x, query_id))
-        # # raise exception if the query_range exceeds the grouping range
-        # querying_range = (90, 91)
-        # k = 5  # looking for k best matches
-        # if querying_range[0] < grouping_range[0] or querying_range[1] > grouping_range[1]:
-        #     raise Exception("query_operations: query: Query range does not match group range")
-        #
-        # # query_result = cluster_rdd.filter(lambda x: x).map(lambda clusters: query(query_sequence, querying_range, clusters, k, time_series_dict.value)).collect()
-        # exclude_overlapping = True
-        # query_result = filter_rdd.map(
-        #     lambda clusters: query(query_sequence, querying_range, clusters, k, time_series_dict.value, exclude_overlapping,
-        #                            0.5)).collect()
-        #
-        # plot_query_result(query_sequence, query_result, time_series_dict.value)
-        #
+        # '(2013e_001)_(100-0-Back)_(B-DC8)_(232665953.1250)'
+        query_id = '(001-SART-August2017-MB)_(211-Current-Item:-3)_(A-DC1)_(64434.0)_(105950.0)'
+        query_sequence = get_data(query_id, 24, 117, time_series_dict.value)  # get an example query
+        filter_rdd = cluster_rdd.filter(lambda x: exclude_same_id(x, query_id))
+        # raise exception if the query_range exceeds the grouping range
+        querying_range = (90, 91)
+        k = 5  # looking for k best matches
+        if querying_range[0] < grouping_range[0] or querying_range[1] > grouping_range[1]:
+            raise Exception("query_operations: query: Query range does not match group range")
+
+        query_result = cluster_rdd.filter(lambda x: x).map(
+            lambda clusters: query(query_sequence, querying_range, clusters, k, time_series_dict.value)).collect()
+        exclude_overlapping = True
+        query_result = filter_rdd.map(
+            lambda clusters: query(query_sequence, querying_range, clusters, k, time_series_dict.value,
+                                   exclude_overlapping,
+                                   0.5)).collect()
+
+        plot_query_result(query_sequence, query_result, time_series_dict.value)
+
     sc.stop()
 
 

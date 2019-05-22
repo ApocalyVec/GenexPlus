@@ -7,7 +7,15 @@ res_list, time_series_dict, global_min, global_max = generate_source('2013e_001_
 
 
 def best_match_ts(query, ts_dict):
+    """
+    Applying the brute-force pattern to find the best match for the query from the set of the time_series_dict
 
+    :param: query list
+    :param: time_series_dict
+
+    :return: best_match dict [key: time_series_ID, value: time_series_data, distance: similarity_distance(DTW Algorithm),
+                                best_path: side-product from dtw algorithm]
+    """
     query_len = len(query)
 
     best_of_so_far = float('inf')
@@ -35,7 +43,20 @@ def best_match_ts(query, ts_dict):
 
 
 def slice_list(ts_list, length):
+    """
+    A helper method used to slice one time_series list into multiple sublist based on the value of the second parameter
 
+    :param ts_list: one time_series list
+    :param length: the length of one sublist
+
+    :return: one sliced time_series includes all of the candidates of the input time_series
+
+    For example:
+    input = [1,3,4,5,6,7,8,4,5,67,5]
+    length = 3
+
+    result = [[1, 3, 4], [3, 4, 5], [4, 5, 6], [5, 6, 7], [6, 7, 8], [7, 8, 4], [8, 4, 5], [4, 5, 67], [5, 67, 5]]
+    """
     number_of_sublist = len(ts_list) - length + 1
 
     sliced_list = []
