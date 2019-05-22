@@ -32,15 +32,15 @@ def generate_query():
     return result
 
 
-test_ts = generate_ts()
-test_query = generate_query()
-
-match_result = best_match_ts(test_query, test_ts)
-
-plt.figure(figsize=(15, 15))
-plt.plot(match_result['value'], label='match result')
-plt.plot(test_query, label='test query')
-plt.show()
+# test_ts = generate_ts()
+# test_query = generate_query()
+#
+# match_result = best_match_ts(test_query, test_ts)
+#
+# plt.figure(figsize=(15, 15))
+# plt.plot(match_result['value'], label='match result')
+# plt.plot(test_query, label='test query')
+# plt.show()
 
 # Prepare test ts and query
 features_to_append = [0, 1, 2, 3, 4]
@@ -48,3 +48,9 @@ res_list, time_series_dict, global_min, global_max = generate_source('2013e_001_
                                                                      features_to_append)
 
 normalized_ts_dict = normalize_ts_with_min_max(time_series_dict, global_min, global_max)
+
+
+def generate_query_v2(ts_list):
+    query_len = numpy.random.randint(50, 100)
+
+    random_int = numpy.random.randint()
