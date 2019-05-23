@@ -35,7 +35,7 @@ from prompt_toolkit.formatted_text import FormattedText, PygmentsTokens
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.completion import WordCompleter, Completion, Completer
-import click
+# import click
 import fuzzyfinder
 from prompt_toolkit.styles import Style
 import pickle
@@ -47,7 +47,7 @@ from CLIExceptions import DuplicateIDError
 from GenexPlusProject import GenexPlusProject
 from cluster_operations import cluster
 from data_operations import normalize_ts_with_min_max, get_data
-from filter_operation import exclude_same_id
+from filter_operation import exclude_same_id, include_in_range
 from group_operations import generate_source, get_subsquences
 from query_operations import query
 from visualize_sequences import plot_query_result
@@ -138,6 +138,12 @@ def load_broadcast_infor(normalized_ts_dict, time_series_dict, res_list):
 
         grouping_range = (1, max([len(v) for v in global_dict.value.values()]))
 
+def no_query_result_before_plot():
+    err_msg = FormattedText([
+        ('class:error',
+         'Please get query result before plot it'),
+    ])
+    print_formatted_text(err_msg, style=style)
 
 class GPCompleter(Completer):
     def get_completions(self, document, complete_evennt):
@@ -563,13 +569,16 @@ while 1:
                     query_sequence = get_data(query_id, 24, 117, global_time_series_dict.value)  # get an example query
                     print(len(query_sequence))
                     # cluster_rdd.collect()
-                    filter_rdd = cluster_rdd.filter(lambda x: exclude_same_id(x, query_id))
+                    # repartition(16).
                     # raise exception if the query_range exceeds the grouping range
+                    # TODO after getting range and filtering, repartition!!
                     querying_range = (90, 91)
                     k = 5  # looking for k best matches
                     print("start query")
                     if querying_range[0] < grouping_range[0] or querying_range[1] > grouping_range[1]:
                         raise Exception("query_operations: query: Query range does not match group range")
+                    filter_rdd = cluster_rdd.filter(lambda x: include_in_range(x, querying_range)).filter(
+                        lambda x: exclude_same_id(x, query_id)).repartition(32)
 
                         # clusters = cluster_rdd.collect()
                     # query_result = cluster_rdd.filter(lambda x: x).map(lambda clusters: query(query_sequence, querying_range, clusters, k, time_series_dict.value)).collect()
@@ -579,6 +588,12 @@ while 1:
                                                exclude_overlapping,
                                                0.5)).collect()
                     # changed here
+                    # plot_query_result(query_sequence, query_result, global_time_series_dict.value)
+
+            elif args[0] == 'plot':
+                if query_result is None:
+                    no_query_result_before_plot()
+                else:
                     plot_query_result(query_sequence, query_result, global_time_series_dict.value)
                     print("plot done")
 

@@ -16,7 +16,6 @@ from visualize_sequences import plot_cluster, plot_query_result
 import matplotlib.pyplot as plt
 
 
-
 def get_global_min_max(ts_dict):
     min_so_far = math.inf
     max_so_far = - math.inf
@@ -29,6 +28,7 @@ def get_global_min_max(ts_dict):
                 max_so_far = value
 
     return min_so_far, max_so_far
+
 
 def ts_dict_to_list(ts_dict):
     ts_list = []
@@ -56,7 +56,6 @@ def genex(ts_dict, query, similarity_threshold):
     # get the length of the longest ts
     for id, data in ts_dict.items():
         ts_len = len(data)
-
 
     global_min, global_max = get_global_min_max(ts_dict)
 
@@ -87,7 +86,6 @@ def genex(ts_dict, query, similarity_threshold):
     filter_rdd = cluster_rdd.filter(lambda x: exclude_same_id(x, query_id))
 
     print()
-
 
 
 
