@@ -1,0 +1,365 @@
+19/04/29 17:59:26 WARN Utils: Your hostname, genex resolves to a loopback address: 127.0.1.1; using 130.215.45.129 instead (on interface ens3)
+19/04/29 17:59:26 WARN Utils: Set SPARK_LOCAL_IP if you need to bind to another address
+19/04/29 17:59:27 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+Using Spark's default log4j profile: org/apache/spark/log4j-defaults.properties
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+[Stage 0:>                                                         (0 + 8) / 16][Stage 0:>                                                        (0 + 14) / 16]                                                                                [Stage 1:>                                                         (0 + 8) / 16][Stage 1:==============>                                           (4 + 8) / 16][Stage 1:=========================>                                (7 + 8) / 16][Stage 1:=============================>                            (8 + 8) / 16][Stage 1:=======================================>                 (11 + 5) / 16][Stage 1:=================================================>       (14 + 2) / 16][Stage 1:=====================================================>   (15 + 1) / 16][Stage 2:=============================>                            (8 + 8) / 16][Stage 2:=====================================================>   (15 + 1) / 16]                                                                                Clustering length of: 149, number of subsequences is 3857
+Clustering length of: 230, number of subsequences is 2318
+Clustering length of: 83, number of subsequences is 5111
+Clustering length of: 132, number of subsequences is 4180
+Clustering length of: 311, number of subsequences is 779
+Clustering length of: 32, number of subsequences is 6080
+Clustering length of: 321, number of subsequences is 589
+Clustering length of: 258, number of subsequences is 1786
+Clustering length of: 49, number of subsequences is 5757
+Clustering length of: 343, number of subsequences is 171
+Clustering length of: 263, number of subsequences is 1691
+[Stage 4:>                                                         (0 + 8) / 16]Clustering length of: 98, number of subsequences is 4826
+Clustering length of: 262, number of subsequences is 1710
+Clustering length of: 151, number of subsequences is 3819
+Clustering length of: 213, number of subsequences is 2641
+Clustering length of: 68, number of subsequences is 5396
+Clustering length of: 86, number of subsequences is 5054
+Clustering length of: 67, number of subsequences is 5415
+Clustering length of: 144, number of subsequences is 3952
+Clustering length of: 81, number of subsequences is 5149
+Clustering length of: 130, number of subsequences is 4218
+Clustering length of: 245, number of subsequences is 2033
+Clustering length of: 279, number of subsequences is 1387
+Clustering length of: 198, number of subsequences is 2926
+Clustering length of: 7, number of subsequences is 6555
+Clustering length of: 228, number of subsequences is 2356
+Clustering length of: 240, number of subsequences is 2128
+Clustering length of: 261, number of subsequences is 1729
+Clustering length of: 147, number of subsequences is 3895
+Clustering length of: 162, number of subsequences is 3610
+Clustering length of: 214, number of subsequences is 2622
+Clustering length of: 341, number of subsequences is 209
+Clustering length of: 96, number of subsequences is 4864
+Clustering length of: 260, number of subsequences is 1748
+Clustering length of: 101, number of subsequences is 4769
+Clustering length of: 1, number of subsequences is 6669
+Clustering length of: 292, number of subsequences is 1140
+Clustering length of: 22, number of subsequences is 6270
+Clustering length of: 179, number of subsequences is 3287
+Clustering length of: 324, number of subsequences is 532
+Clustering length of: 39, number of subsequences is 5947
+Clustering length of: 194, number of subsequences is 3002
+Clustering length of: 48, number of subsequences is 5776
+Clustering length of: 148, number of subsequences is 3876
+Clustering length of: 21, number of subsequences is 6289
+Clustering length of: 211, number of subsequences is 2679
+Clustering length of: 226, number of subsequences is 2394
+Clustering length of: 177, number of subsequences is 3325
+Clustering length of: 196, number of subsequences is 2964
+Clustering length of: 54, number of subsequences is 5662
+Clustering length of: 80, number of subsequences is 5168
+Clustering length of: 2, number of subsequences is 6650
+Clustering length of: 103, number of subsequences is 4731
+Clustering length of: 243, number of subsequences is 2071
+Clustering length of: 309, number of subsequences is 817
+Clustering length of: 209, number of subsequences is 2717
+Clustering length of: 100, number of subsequences is 4788
+Clustering length of: 5, number of subsequences is 6593
+Clustering length of: 275, number of subsequences is 1463
+Clustering length of: 112, number of subsequences is 4560
+Clustering length of: 135, number of subsequences is 4123
+Clustering length of: 241, number of subsequences is 2109
+Clustering length of: 307, number of subsequences is 855
+Clustering length of: 118, number of subsequences is 4446
+Clustering length of: 339, number of subsequences is 247
+Clustering length of: 322, number of subsequences is 570
+Clustering length of: 20, number of subsequences is 6308
+Clustering length of: 115, number of subsequences is 4503
+Clustering length of: 273, number of subsequences is 1501
+Clustering length of: 66, number of subsequences is 5434
+Clustering length of: 128, number of subsequences is 4256
+Clustering length of: 167, number of subsequences is 3515
+Clustering length of: 337, number of subsequences is 285
+Clustering length of: 37, number of subsequences is 5985
+Clustering length of: 17, number of subsequences is 6365
+Clustering length of: 150, number of subsequences is 3838
+Clustering length of: 19, number of subsequences is 6327
+Clustering length of: 176, number of subsequences is 3344
+Clustering length of: 199, number of subsequences is 2907
+Clustering length of: 274, number of subsequences is 1482
+Clustering length of: 52, number of subsequences is 5700
+Clustering length of: 246, number of subsequences is 2014
+Clustering length of: 306, number of subsequences is 874
+Clustering length of: 231, number of subsequences is 2299
+Clustering length of: 69, number of subsequences is 5377
+Clustering length of: 192, number of subsequences is 3040
+Clustering length of: 34, number of subsequences is 6042
+Clustering length of: 97, number of subsequences is 4845
+Clustering length of: 278, number of subsequences is 1406
+Clustering length of: 3, number of subsequences is 6631
+Clustering length of: 310, number of subsequences is 798
+Clustering length of: 327, number of subsequences is 475
+Clustering length of: 295, number of subsequences is 1083
+Clustering length of: 342, number of subsequences is 190
+Clustering length of: 84, number of subsequences is 5092
+Clustering length of: 326, number of subsequences is 494
+Clustering length of: 224, number of subsequences is 2432
+Clustering length of: 294, number of subsequences is 1102
+Clustering length of: 229, number of subsequences is 2337
+Clustering length of: 71, number of subsequences is 5339
+Clustering length of: 113, number of subsequences is 4541
+Clustering length of: 182, number of subsequences is 3230
+Clustering length of: 50, number of subsequences is 5738
+Clustering length of: 64, number of subsequences is 5472
+Clustering length of: 133, number of subsequences is 4161
+Clustering length of: 35, number of subsequences is 6023
+Clustering length of: 180, number of subsequences is 3268
+Clustering length of: 33, number of subsequences is 6061
+Clustering length of: 247, number of subsequences is 1995
+Clustering length of: 6, number of subsequences is 6574
+Clustering length of: 23, number of subsequences is 6251
+Clustering length of: 197, number of subsequences is 2945
+Clustering length of: 164, number of subsequences is 3572
+Clustering length of: 82, number of subsequences is 5130
+Clustering length of: 288, number of subsequences is 1216
+Clustering length of: 65, number of subsequences is 5453
+Clustering length of: 16, number of subsequences is 6384
+Clustering length of: 163, number of subsequences is 3591
+Clustering length of: 165, number of subsequences is 3553
+Clustering length of: 244, number of subsequences is 2052
+Clustering length of: 38, number of subsequences is 5966
+Clustering length of: 55, number of subsequences is 5643
+Clustering length of: 276, number of subsequences is 1444
+Clustering length of: 114, number of subsequences is 4522
+Clustering length of: 325, number of subsequences is 513
+Clustering length of: 131, number of subsequences is 4199
+Clustering length of: 181, number of subsequences is 3249
+Clustering length of: 308, number of subsequences is 836
+Clustering length of: 145, number of subsequences is 3933
+Clustering length of: 320, number of subsequences is 608
+Clustering length of: 340, number of subsequences is 228
+Clustering length of: 304, number of subsequences is 912
+Clustering length of: 116, number of subsequences is 4484
+Clustering length of: 70, number of subsequences is 5358
+Clustering length of: 272, number of subsequences is 1520
+Clustering length of: 146, number of subsequences is 3914
+Clustering length of: 195, number of subsequences is 2983
+Clustering length of: 293, number of subsequences is 1121
+Clustering length of: 129, number of subsequences is 4237
+Clustering length of: 87, number of subsequences is 5035
+Clustering length of: 256, number of subsequences is 1824
+Clustering length of: 117, number of subsequences is 4465
+Clustering length of: 212, number of subsequences is 2660
+Clustering length of: 227, number of subsequences is 2375
+Clustering length of: 336, number of subsequences is 304
+Clustering length of: 242, number of subsequences is 2090
+Clustering length of: 160, number of subsequences is 3648
+Clustering length of: 161, number of subsequences is 3629
+Clustering length of: 102, number of subsequences is 4750
+Clustering length of: 18, number of subsequences is 6346
+Clustering length of: 53, number of subsequences is 5681
+Clustering length of: 259, number of subsequences is 1767
+Clustering length of: 4, number of subsequences is 6612
+Clustering length of: 119, number of subsequences is 4427
+Clustering length of: 208, number of subsequences is 2736
+Clustering length of: 291, number of subsequences is 1159
+Clustering length of: 193, number of subsequences is 3021
+Clustering length of: 323, number of subsequences is 551
+Clustering length of: 134, number of subsequences is 4142
+Clustering length of: 99, number of subsequences is 4807
+Clustering length of: 183, number of subsequences is 3211
+Clustering length of: 328, number of subsequences is 456
+[Stage 4:===>                                                      (1 + 8) / 16]Clustering length of: 225, number of subsequences is 2413
+Clustering length of: 338, number of subsequences is 266
+Clustering length of: 120, number of subsequences is 4408
+Clustering length of: 85, number of subsequences is 5073
+Clustering length of: 210, number of subsequences is 2698
+Clustering length of: 36, number of subsequences is 6004
+Clustering length of: 166, number of subsequences is 3534
+Clustering length of: 257, number of subsequences is 1805
+Clustering length of: 215, number of subsequences is 2603
+Clustering length of: 51, number of subsequences is 5719
+Clustering length of: 178, number of subsequences is 3306
+Clustering length of: 24, number of subsequences is 6232
+Clustering length of: 277, number of subsequences is 1425
+Clustering length of: 289, number of subsequences is 1197
+[Stage 4:==========>                                               (3 + 8) / 16]Clustering length of: 185, number of subsequences is 3173
+Clustering length of: 282, number of subsequences is 1330
+[Stage 4:==============>                                           (4 + 8) / 16]Clustering length of: 11, number of subsequences is 6479
+Clustering length of: 305, number of subsequences is 893
+Clustering length of: 290, number of subsequences is 1178
+[Stage 4:==================>                                       (5 + 8) / 16]Clustering length of: 140, number of subsequences is 4028
+Clustering length of: 266, number of subsequences is 1634
+[Stage 4:=========================>                                (7 + 8) / 16]Clustering length of: 56, number of subsequences is 5624
+Clustering length of: 109, number of subsequences is 4617
+Clustering length of: 158, number of subsequences is 3686
+[Stage 4:=============================>                            (8 + 8) / 16]Clustering length of: 201, number of subsequences is 2869
+Clustering length of: 15, number of subsequences is 6403
+Clustering length of: 26, number of subsequences is 6194
+Clustering length of: 12, number of subsequences is 6460
+Clustering length of: 9, number of subsequences is 6517
+Clustering length of: 62, number of subsequences is 5510
+Clustering length of: 75, number of subsequences is 5263
+Clustering length of: 333, number of subsequences is 361
+Clustering length of: 79, number of subsequences is 5187
+Clustering length of: 216, number of subsequences is 2584
+Clustering length of: 77, number of subsequences is 5225
+Clustering length of: 122, number of subsequences is 4370
+Clustering length of: 94, number of subsequences is 4902
+Clustering length of: 107, number of subsequences is 4655
+Clustering length of: 72, number of subsequences is 5320
+Clustering length of: 28, number of subsequences is 6156
+Clustering length of: 41, number of subsequences is 5909
+Clustering length of: 141, number of subsequences is 4009
+Clustering length of: 111, number of subsequences is 4579
+Clustering length of: 154, number of subsequences is 3762
+Clustering length of: 139, number of subsequences is 4047
+Clustering length of: 152, number of subsequences is 3800
+Clustering length of: 60, number of subsequences is 5548
+Clustering length of: 126, number of subsequences is 4294
+Clustering length of: 173, number of subsequences is 3401
+Clustering length of: 73, number of subsequences is 5301
+Clustering length of: 143, number of subsequences is 3971
+Clustering length of: 218, number of subsequences is 2546
+Clustering length of: 171, number of subsequences is 3439
+Clustering length of: 184, number of subsequences is 3192
+Clustering length of: 142, number of subsequences is 3990
+Clustering length of: 92, number of subsequences is 4940
+Clustering length of: 205, number of subsequences is 2793
+Clustering length of: 250, number of subsequences is 1938
+Clustering length of: 57, number of subsequences is 5605
+Clustering length of: 175, number of subsequences is 3363
+Clustering length of: 203, number of subsequences is 2831
+Clustering length of: 248, number of subsequences is 1976
+Clustering length of: 237, number of subsequences is 2185
+Clustering length of: 90, number of subsequences is 4978
+Clustering length of: 190, number of subsequences is 3078
+Clustering length of: 124, number of subsequences is 4332
+Clustering length of: 235, number of subsequences is 2223
+Clustering length of: 280, number of subsequences is 1368
+Clustering length of: 207, number of subsequences is 2755
+Clustering length of: 269, number of subsequences is 1577
+Clustering length of: 137, number of subsequences is 4085
+Clustering length of: 222, number of subsequences is 2470
+Clustering length of: 344, number of subsequences is 152
+Clustering length of: 267, number of subsequences is 1615
+Clustering length of: 40, number of subsequences is 5928
+Clustering length of: 301, number of subsequences is 969
+Clustering length of: 314, number of subsequences is 722
+Clustering length of: 156, number of subsequences is 3724
+Clustering length of: 271, number of subsequences is 1539
+Clustering length of: 346, number of subsequences is 114
+Clustering length of: 29, number of subsequences is 6137
+Clustering length of: 299, number of subsequences is 1007
+Clustering length of: 186, number of subsequences is 3154
+Clustering length of: 281, number of subsequences is 1349
+Clustering length of: 254, number of subsequences is 1862
+Clustering length of: 303, number of subsequences is 931
+Clustering length of: 331, number of subsequences is 399
+Clustering length of: 335, number of subsequences is 323
+Clustering length of: 233, number of subsequences is 2261
+Clustering length of: 155, number of subsequences is 3743
+Clustering length of: 284, number of subsequences is 1292
+Clustering length of: 31, number of subsequences is 6099
+Clustering length of: 350, number of subsequences is 38
+Clustering length of: 270, number of subsequences is 1558
+Clustering length of: 106, number of subsequences is 4674
+Clustering length of: 316, number of subsequences is 684
+Clustering length of: 264, number of subsequences is 1672
+Clustering length of: 265, number of subsequences is 1653
+Clustering length of: 348, number of subsequences is 76
+Clustering length of: 286, number of subsequences is 1254
+Clustering length of: 220, number of subsequences is 2508
+Clustering length of: 187, number of subsequences is 3135
+Clustering length of: 285, number of subsequences is 1273
+Clustering length of: 88, number of subsequences is 5016
+Clustering length of: 14, number of subsequences is 6422
+Clustering length of: 297, number of subsequences is 1045
+Clustering length of: 61, number of subsequences is 5529
+Clustering length of: 42, number of subsequences is 5890
+Clustering length of: 63, number of subsequences is 5491
+Clustering length of: 252, number of subsequences is 1900
+Clustering length of: 329, number of subsequences is 437
+Clustering length of: 121, number of subsequences is 4389
+Clustering length of: 43, number of subsequences is 5871
+Clustering length of: 8, number of subsequences is 6536
+Clustering length of: 108, number of subsequences is 4636
+Clustering length of: 74, number of subsequences is 5282
+Clustering length of: 105, number of subsequences is 4693
+Clustering length of: 78, number of subsequences is 5206
+Clustering length of: 125, number of subsequences is 4313
+Clustering length of: 95, number of subsequences is 4883
+Clustering length of: 44, number of subsequences is 5852
+Clustering length of: 27, number of subsequences is 6175
+Clustering length of: 312, number of subsequences is 760
+Clustering length of: 45, number of subsequences is 5833
+Clustering length of: 25, number of subsequences is 6213
+Clustering length of: 104, number of subsequences is 4712
+Clustering length of: 138, number of subsequences is 4066
+Clustering length of: 127, number of subsequences is 4275
+Clustering length of: 110, number of subsequences is 4598
+Clustering length of: 76, number of subsequences is 5244
+Clustering length of: 136, number of subsequences is 4104
+Clustering length of: 159, number of subsequences is 3667
+Clustering length of: 59, number of subsequences is 5567
+Clustering length of: 170, number of subsequences is 3458
+Clustering length of: 89, number of subsequences is 4997
+Clustering length of: 93, number of subsequences is 4921
+Clustering length of: 46, number of subsequences is 5814
+Clustering length of: 172, number of subsequences is 3420
+Clustering length of: 191, number of subsequences is 3059
+Clustering length of: 168, number of subsequences is 3496
+Clustering length of: 202, number of subsequences is 2850
+Clustering length of: 169, number of subsequences is 3477
+Clustering length of: 221, number of subsequences is 2489
+Clustering length of: 91, number of subsequences is 4959
+Clustering length of: 223, number of subsequences is 2451
+Clustering length of: 204, number of subsequences is 2812
+Clustering length of: 234, number of subsequences is 2242
+Clustering length of: 200, number of subsequences is 2888
+Clustering length of: 157, number of subsequences is 3705
+Clustering length of: 153, number of subsequences is 3781
+Clustering length of: 174, number of subsequences is 3382
+Clustering length of: 219, number of subsequences is 2527
+Clustering length of: 47, number of subsequences is 5795
+Clustering length of: 58, number of subsequences is 5586
+Clustering length of: 236, number of subsequences is 2204
+Clustering length of: 232, number of subsequences is 2280
+Clustering length of: 189, number of subsequences is 3097
+Clustering length of: 251, number of subsequences is 1919
+Clustering length of: 249, number of subsequences is 1957
+Clustering length of: 206, number of subsequences is 2774
+Clustering length of: 268, number of subsequences is 1596
+Clustering length of: 296, number of subsequences is 1064
+Clustering length of: 283, number of subsequences is 1311
+Clustering length of: 298, number of subsequences is 1026
+Clustering length of: 217, number of subsequences is 2565
+Clustering length of: 13, number of subsequences is 6441
+Clustering length of: 300, number of subsequences is 988
+Clustering length of: 287, number of subsequences is 1235
+[Stage 4:================================>                         (9 + 7) / 16]Clustering length of: 315, number of subsequences is 703
+Clustering length of: 238, number of subsequences is 2166
+Clustering length of: 330, number of subsequences is 418
+Clustering length of: 10, number of subsequences is 6498
+Clustering length of: 351, number of subsequences is 19
+Clustering length of: 319, number of subsequences is 627
+Clustering length of: 332, number of subsequences is 380
+Clustering length of: 347, number of subsequences is 95
+Clustering length of: 188, number of subsequences is 3116
+Clustering length of: 123, number of subsequences is 4351
+Clustering length of: 313, number of subsequences is 741
+Clustering length of: 239, number of subsequences is 2147
+Clustering length of: 302, number of subsequences is 950
+Clustering length of: 345, number of subsequences is 133
+Clustering length of: 334, number of subsequences is 342
+[Stage 4:===================================>                     (10 + 6) / 16]Clustering length of: 30, number of subsequences is 6118
+Clustering length of: 255, number of subsequences is 1843
+Clustering length of: 317, number of subsequences is 665
+Clustering length of: 349, number of subsequences is 57
+Clustering length of: 253, number of subsequences is 1881
+[Stage 4:==========================================>              (12 + 4) / 16][Stage 4:=================================================>       (14 + 2) / 16][Stage 4:=====================================================>   (15 + 1) / 16]Clustering length of: 318, number of subsequences is 646
+                                                                                processing dataset./dataset/2013e_001_2_channels_02backs.csv
+Global Max is 7841.1265
+Global Min is 344.8395
+group of timeseries from 1 to 352 using 5.819340705871582 seconds
+grouping done, saved to dataset
+Working on clustering
+clustering of timeseries from 1 to 352 using 43.952529191970825 seconds
+clustering done, saved to dataset

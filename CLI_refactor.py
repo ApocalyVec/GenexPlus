@@ -278,6 +278,7 @@ while 1:
                                     else:
                                         print("cluster information missed")
 
+
                             except FileNotFoundError:
                                 print("one of the three folder is empty")
 
@@ -402,6 +403,9 @@ while 1:
                             # creating new GenexPlus project
                             shutil.rmtree(path_to_save + '/group/')
                             group_rdd.saveAsPickleFile(path_to_save + '/group/')
+
+
+
                     else:
                         group_rdd.saveAsPickleFile(path_to_save + '/group/')
                     print("group rdd information saved to " + path_to_save + '/group/')

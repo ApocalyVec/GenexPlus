@@ -69,24 +69,26 @@ def genex(ts_dict, query, similarity_threshold):
     ts_list = ts_dict_to_list(normalized_ts_dict)
     ts_list_rdd = sc.parallelize(ts_list[1:], numSlices=16)
 
-    # grouping
-    group_rdd = ts_list_rdd.flatMap(lambda x: get_subsquences(x, 0, ts_len)).map(
-        lambda x: (x[0], [x[1:]])).reduceByKey(
-        lambda a, b: a + b)
-    # clustering
-
-    # group_res = group_rdd.collect()
-    # cluster(group_res[1][1], group_res[1][0], similarity_threshold, global_dict.value)  # testing group with length of 9
-
-    cluster_rdd = group_rdd.map(lambda x: cluster(x[1], x[0], similarity_threshold, global_dict.value))
-
-    cluster_result = cluster_rdd.collect()
-
-    print()
-
     """
     grouping
     """
+    group_rdd = ts_list_rdd.flatMap(lambda x: get_subsquences(x, 0, ts_len)).map(
+        lambda x: (x[0], [x[1:]])).reduceByKey(
+        lambda a, b: a + b)
+    """
+    clustering
+    """
+    cluster_rdd = group_rdd.map(lambda x: cluster(x[1], x[0], similarity_threshold, global_dict.value))
+    cluster_result = cluster_rdd.collect()
+
+    """
+    querying
+    """
+    filter_rdd = cluster_rdd.filter(lambda x: exclude_same_id(x, query_id))
+
+    print()
+
+
 
 
 
