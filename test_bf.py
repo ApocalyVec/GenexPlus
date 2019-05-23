@@ -1,11 +1,11 @@
-import matplotlib.pyplot as plt
-from brute_force import best_match_ts
+import random
+
 import matplotlib.pyplot as ply
 import numpy
-import csv
 
-from group_operations import generate_source
+from brute_force import best_match_ts
 from data_operations import normalize_ts_with_min_max
+from group_operations import generate_source
 
 
 def generate_ts():
@@ -50,7 +50,35 @@ res_list, time_series_dict, global_min, global_max = generate_source('2013e_001_
 normalized_ts_dict = normalize_ts_with_min_max(time_series_dict, global_min, global_max)
 
 
-def generate_query_v2(ts_list):
-    query_len = numpy.random.randint(50, 100)
+def generate_query_v2(ts_dict, amount=5):
+    query_results = []
+    for i in range(amount):
+        query_id, query_raw_ts = random.choice(list(ts_dict.items()))
+        start = (i + 1) * 2
+        query_sequence = query_raw_ts[start:numpy.random.randint(low=start + 5, high=len(query_raw_ts) // 2)]
 
-    random_int = numpy.random.randint()
+        query_results.append(query_sequence)
+
+    return query_results
+
+
+query_set = generate_query_v2(normalized_ts_dict, 3)
+
+amount = 0
+
+for each in query_set:
+    amount += 1
+    ply.figure()
+    ply.title("query " + str(amount))
+    ply.plot(each)
+    ply.show()
+
+    match_set = best_match_ts(each, normalized_ts_dict)
+
+    for i in range(len(match_set)):
+        match_ts_dict = match_set[i]
+
+        ply.figure(i)
+        ply.title("match_ts " + str(i + 1))
+        ply.plot(match_ts_dict['value'])
+        ply.show()

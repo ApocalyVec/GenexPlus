@@ -1,10 +1,16 @@
-from group_operations import generate_source
-from dtaidistance import dtw  # source code https://github.com/wannesm/dtaidistance
 import datetime
+
+from dtaidistance import dtw  # source code https://github.com/wannesm/dtaidistance
+
+from group_operations import generate_source
 
 features_to_append = [0, 1, 2, 3, 4]
 res_list, time_series_dict, global_min, global_max = generate_source('2013e_001_2_channels_02backs.csv', features_to_append)
 
+
+def get_distance(dwtfunc, *args):
+    distance, paths = dwtfunc(*args)
+    return distance
 
 def best_match_ts(query, ts_dict):
     """
@@ -13,33 +19,50 @@ def best_match_ts(query, ts_dict):
     :param: query list
     :param: time_series_dict
 
-    :return: best_match dict [key: time_series_ID, value: time_series_data, distance: similarity_distance(DTW Algorithm),
-                                best_path: side-product from dtw algorithm]
+    best_match: (type of dict) {key: time_series_ID, value: time_series_data, distance: similarity_distance(DTW Algorithm),
+                                best_path: side-product from dtw algorithm}
+    :return: best_match_list [{bm_dict1}, {bm_dict2}, {bm_dict3}], .....]
     """
     query_len = len(query)
 
+    best_match_list = []
+
     best_of_so_far = float('inf')
 
-    best_match = dict()
 
     start_time = datetime.datetime.now()
 
     for key, value in ts_dict.items():
         candidates = slice_list(value, query_len)
 
+        candidates.sort(key=lambda each: get_distance(dtw.warping_paths, each, query))
+
+
         for i in range(len(candidates)):
             distance, paths = dtw.warping_paths(query, candidates[i])
 
             if distance < best_of_so_far:
+                best_match = dict()
+
+                best_of_so_far = distance
                 best_match['ts_id'] = key
                 best_match['value'] = candidates[i]
                 best_match['distance'] = distance
                 best_match['best_path'] = dtw.best_path(paths)
 
-    end_time = datetime.datetime.now()
-    print("Time period of the execution for the brute_force: " + str((end_time - start_time).seconds))
+                best_match_list.append(best_match)
 
-    return best_match
+            else:
+                break
+
+    for match in best_match_list:
+        if match['distance'] > best_of_so_far:
+            best_match_list.remove(match)
+
+    end_time = datetime.datetime.now()
+    print("Time period of the execution for the brute_force: " + str((end_time - start_time).microseconds) + "ms")
+
+    return best_match_list
 
 
 def slice_list(ts_list, length):
