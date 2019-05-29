@@ -1,87 +1,84 @@
 # GenexPlus
 
-One Paragraph of project description goes here
+This project is a general exploration tool for time series. It implements Dynamic Time Warping (DTW) and pre-processing by clustering discussed in these papers.
+
+http://real.mtak.hu/74287/1/p1595_neamtu_u.pdf
+http://real.mtak.hu/43722/1/p169_neamtu_u.pdf
+https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=8509275
 
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
 
 ### Prerequisites
+The project uses Python interpreter version 3.6, but any latest Python version should work.
 
-What things you need to install the software and how to install them
+Make sure the following packages is installed in your environment:
 
-```
-Give examples
-```
+cycler==0.10.0
 
-### Installing
+fastdtw==0.3.2
 
-A step by step series of examples that tell you how to get a development env running
+kiwisolver==1.0.1
 
-Say what the step will be
+matplotlib==3.0.3
 
-```
-Give the example
-```
+numpy==1.16.2
 
-And repeat
+pandas==0.24.2
 
-```
-until finished
-```
+py4j==0.10.7
 
-End with an example of getting some data out of the system or using it for a little demo
+pyparsing==2.4.0
 
-## Running the tests
+pyspark==2.4.1
 
-Explain how to run the automated tests for this system
+python-dateutil==2.8.0
 
-### Break down into end to end tests
+pytz==2018.9
 
-Explain what these tests test and why
+scipy==1.2.1
 
-```
-Give an example
-```
+six==1.12.0
 
-### And coding style tests
+sqlparse==0.3.0
 
-Explain what these tests test and why
+psutil==5.6.2
+
+You can install the package through pip install 
 
 ```
-Give an example
+pip install numpy
 ```
 
-## Deployment
+## To Start Running the program
+Navigate to the project's root directory. Run the following command:
+```
+python3 CLI_refactor.py
+```
+Now you are in the Genex Console, you should see the following prompt:
+```
+Java Home Path is set to None
+GenexPlus > 
+```
+Because PySpark runs Java, you need to set the Java Home for Genex. The Java version below 9.0 and above 1.7 is requried for the current implementation. 
 
-Add additional notes about how to deploy this on a live system
+While in Genex Console, use the following command to set Java Home:
+```
+set <JAVA_HOME> 
+```
+For example:
+```
+set /Library/Java/JavaVirtualMachines/jdk1.8.0_151.jdk/Contents/Home
+```
+If the above command runs successfully, you should see the following message in the console:
+```
+Using Spark's default log4j profile: org/apache/spark/log4j-defaults.properties
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+Java home set at /Library/Java/JavaVirtualMachines/jdk1.8.0_151.jdk/Contents/Home
+```
+If you see warnings in the message, you could ignore them for they won't affect the program's functionality.
 
-## Built With
-
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
-
-## Contributing
-
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
-
-## Authors
-
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
-
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
-## Acknowledgments
-
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
+## GenexPlus Project
+GenexPlus organizes user content under projects. 
