@@ -75,7 +75,7 @@ def clusterer_legacy(groups, st):
                     clusters[sequence] = [sequence]
 
 
-def cluster(group, length, st, normalized_ts_dict, dist_type = 'eu'):
+def cluster(group: list, length: int, st: float, norm_ts_dict: dict, dist_type: str = 'eu') -> dict:
     """
     all subsequence in 'group' must be of the same length
     For example:
@@ -93,12 +93,6 @@ def cluster(group, length, st, normalized_ts_dict, dist_type = 'eu'):
     """
     cluster = dict()
 
-    # get all seubsequences from time_series_dict
-    # at one time
-    # ???or maybe during group operation
-    # During group operation is better, because the data will be too large if
-    # we retrieve all of it
-
     ssequences = []
     for g in group:
         tid = g[0]
@@ -112,7 +106,7 @@ def cluster(group, length, st, normalized_ts_dict, dist_type = 'eu'):
     for time_series in ssequences:
         # end_point and start_point
         if time_series.end_point - time_series.start_point != length:
-            raise Exception("cluster_operations: clusterer: group length dismatch, len = " + str(length))
+            raise Exception("cluster_operations: group length dismatch, len = " + str(length))
 
     # randomize the sequence in the group to remove data-related bias
     ssequences = randomize(ssequences)
@@ -121,7 +115,7 @@ def cluster(group, length, st, normalized_ts_dict, dist_type = 'eu'):
     cluster_count = 0
     for ss in ssequences:
         # print("number of clusters is " + str(cluster_count))
-        # ss.set_raw_data(get_data(ss.id, ss.start_point, ss.end_point, time_series_dict))
+        # ss.set_raw_data(get_data(ss.id, ss.start_point, ss.end_point, ts_dict))
         if not cluster.keys(): 
             # if there is no item in the similarity cluster
             # future delimiter
@@ -137,8 +131,8 @@ def cluster(group, length, st, normalized_ts_dict, dist_type = 'eu'):
             # rprst is a time_series obj
             for rprst in list(cluster.keys()):  # iterate though all the similarity clusters, rprst = representative
                 # ss is also a time_series obj
-                ss_raw_data = get_data(ss.id, ss.start_point, ss.end_point, normalized_ts_dict)
-                rprst_raw_data = get_data(rprst.id, rprst.start_point, rprst.end_point, normalized_ts_dict)
+                ss_raw_data = get_data(ss.id, ss.start_point, ss.end_point, norm_ts_dict)
+                rprst_raw_data = get_data(rprst.id, rprst.start_point, rprst.end_point, norm_ts_dict)
                 # print(type(ss_raw_data))
                 # print(ss_raw_data)
                 # print(rprst_raw_data)
@@ -202,7 +196,7 @@ def cluster_two_pass(group, length, st, normalized_ts_dict, dist_type = 'eu'):
     """
     cluster = dict()
 
-    # get all seubsequences from time_series_dict
+    # get all seubsequences from ts_dict
     # at one time
     # ???or maybe during group operation
     # During group operation is better, because the data will be too large if

@@ -113,7 +113,7 @@ class GenexPlusProject:
 
     def set_group_data(self, group_rdd_res, group_time):
         self.group_rdd_res = group_rdd_res
-        # self.write_to_log('group', (self.time_series_dict.keys(), group_time))
+        # self.write_to_log('group', (self.ts_dict.keys(), group_time))
 
         self.write_to_log('group', (self.time_series_dict.keys()))
 

@@ -219,7 +219,7 @@ while 1:
                         print("Global Min is " + str(global_min))
                         normalized_ts_dict = normalize_ts_with_min_max(time_series_dict, global_min, global_max)
 
-                        # gp_project.save_time_series(time_series_dict, normalized_ts_dict, args[1])  # TODO include load history
+                        # gp_project.save_time_series(ts_dict, normalized_ts_dict, args[1])  # TODO include load history
                         try:
                             gp_project.load_time_series(time_series_dict, normalized_ts_dict, time_series_list)
                         except DuplicateIDError as e:
@@ -337,7 +337,7 @@ while 1:
                 if querying_range[0] < grouping_range[0] or querying_range[1] > grouping_range[1]:
                     raise Exception("query_operations: query: Query range does not match group range")
 
-                # query_result = cluster_rdd.filter(lambda x: x).map(lambda clusters: query(query_sequence, querying_range, clusters, k, time_series_dict.value)).collect()
+                # query_result = cluster_rdd.filter(lambda x: x).map(lambda clusters: query(query_sequence, querying_range, clusters, k, ts_dict.value)).collect()
                 exclude_overlapping = True
                 query_result = filter_rdd.map(
                     lambda clusters: query(query_sequence, querying_range, clusters, k, time_series_dict.value,

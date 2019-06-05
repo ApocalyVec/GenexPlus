@@ -67,9 +67,8 @@ def generate_source(file, features_to_append):
     :return: a list of data in [id, [list of data]] format
     """
     # List of result
-    res = []
+    ts_list = []
     # dict to be broadcasted
-    myDict = dict()
     wrap_in_parantheses = lambda x: "(" + str(x) + ")"
 
     # get the max and min
@@ -93,8 +92,7 @@ def generate_source(file, features_to_append):
                     series_label = "_".join(label_features).replace('  ', '-').replace(' ', '-')
 
                     series_data = list(map(float, data[len(label_features_index):]))
-                    res.append([series_label, series_data])
-                    myDict[series_label] = series_data
+                    ts_list.append([series_label, series_data])
 
                     # get the min and max
                     if len(series_data) == 0:
@@ -110,6 +108,4 @@ def generate_source(file, features_to_append):
     # for key, value in myDict.items():
     #     myDict[key] = normalize(value, max, min)
 
-    return res, myDict, global_min, global_max
-
-
+    return ts_list, global_min, global_max

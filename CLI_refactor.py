@@ -70,6 +70,7 @@ style = Style.from_dict({
     # 'path':     'ansicyan underline',
 })
 
+
 def gp_not_opened_error():
     err_msg = FormattedText([
         ('class:error', 'No GenexPlus Project Opened, please use the open command to open a GenexPlus Project'),
@@ -90,17 +91,20 @@ def no_group_before_cluster_error():
     ])
     print_formatted_text(err_msg, style=style)
 
+
 def no_cluster_before_query_error():
     err_msg = FormattedText([
         ('class:error', 'Please cluster the data before querying'),
     ])
     print_formatted_text(err_msg, style=style)
 
+
 def get_arg_error():
     err_msg = FormattedText([
         ('class:error', 'Please group the data before clustering'),
     ])
     print_formatted_text(err_msg, style=style)
+
 
 def load_file_not_found_error(missing_file):
     err_msg = FormattedText([
@@ -109,12 +113,14 @@ def load_file_not_found_error(missing_file):
     ])
     print_formatted_text(err_msg, style=style)
 
+
 def no_query_result_before_plot():
     err_msg = FormattedText([
         ('class:error',
          'Please get query result before plot it'),
     ])
     print_formatted_text(err_msg, style=style)
+
 
 def create_new_project(SAVED_DATASET_DIR, args):
     isCreateNewProject = prompt("Project " + args[
@@ -135,7 +141,7 @@ def load_broadcast_infor(normalized_ts_dict, time_series_dict, res_list):
     else:
 
         global_dict = sc.broadcast(normalized_ts_dict)
-        # change naming here from time_series_dict to global_time_series_dict
+        # change naming here from ts_dict to global_time_series_dict
         # because it might cause problem when saving
         global_time_series_dict = sc.broadcast(time_series_dict)
         global_dict_rdd = sc.parallelize(res_list[1:],
@@ -164,9 +170,9 @@ features_to_append = [0, 1, 2, 3, 4]  # TODO what is this?
 grouping_range = None
 print("Java Home Path is set to None")
 
-time_series_dict = None
+ts_dict = None
 normalized_ts_dict = None
-res_list = None
+ts_list = None
 
 group_rdd = None
 cluster_rdd = None
@@ -232,14 +238,14 @@ while 1:
                                         print(
                                             "try to load time series information from " + working_dir + '/dict/' + "...")
                                         with open(preprocess_path + 'time_series.pickle', 'rb') as handle:
-                                            time_series_dict = pickle.load(handle)
+                                            ts_dict = pickle.load(handle)
                                     if os.path.getsize(preprocess_path + 'normalized_time_series.pickle') > 0:
                                         with open(preprocess_path + 'normalized_time_series.pickle', 'rb') as handle:
                                             normalized_ts_dict = pickle.load(handle)
-                                    if os.path.getsize(preprocess_path + 'res_list.pickle') > 0:
-                                        with open(preprocess_path + 'res_list.pickle', 'rb') as handle:
-                                            res_list = pickle.load(handle)
-                                    if time_series_dict is not None and normalized_ts_dict is not None and res_list is not None:
+                                    if os.path.getsize(preprocess_path + 'ts_list.pickle') > 0:
+                                        with open(preprocess_path + 'ts_list.pickle', 'rb') as handle:
+                                            ts_list = pickle.load(handle)
+                                    if ts_dict is not None and normalized_ts_dict is not None and ts_list is not None:
 
                                         # print("load time series information successfully from " + preprocess_path)
                                         msg = FormattedText([
@@ -249,9 +255,9 @@ while 1:
                                         print_formatted_text(msg, style=style)
 
                                     else:
-                                        time_series_dict = None
+                                        ts_dict = None
                                         normalized_ts_dict = None
-                                        res_list = None
+                                        ts_list = None
                                         err_msg = FormattedText([
                                             ('class:error',
                                              "some part of processing information missed, make them all empty")
@@ -338,7 +344,7 @@ while 1:
                         load_file_not_found_error(args[1])
                     else:
                         update_pre_processing = False
-                        if res_list is not None and time_series_dict is not None and normalized_ts_dict is not None:
+                        if ts_list is not None and ts_dict is not None and normalized_ts_dict is not None:
 
                             is_Update_pre_infor = prompt("Project " + args[
                                 1] + " pre-processing information exist, would you like to update ? [y/n]")
@@ -349,26 +355,17 @@ while 1:
                                 print("update pre-processing information " + args[1])
 
                         # change here
-                        if update_pre_processing or not res_list or not time_series_dict or not normalized_ts_dict:
-                            res_list, time_series_dict, global_min, global_max = generate_source(args[1],
-                                                                                                 features_to_append)
+                        if update_pre_processing or not ts_list or not ts_dict or not normalized_ts_dict:
+                            ts_list, global_min, global_max = generate_source(args[1], features_to_append)
+
                             print("loaded file " + args[1])
                             print("Global Max is " + str(global_max))
                             print("Global Min is " + str(global_min))
-                            normalized_ts_dict = normalize_ts_with_min_max(time_series_dict, global_min, global_max)
 
-                        # gp_project.save_time_series(time_series_dict, normalized_ts_dict, args[1])  # TODO include load history
-                        # ???????
-                        # try:
-                        #     gp_project.load_time_series(time_series_dict, normalized_ts_dict, res_list)
-                        # except DuplicateIDError as e:
-                        #     err_msg = FormattedText([
-                        #         ('class:error',
-                        #          'Error: duplicate ID(s) found in existing time series and newly loaded time series, dupplicate ID(s):'),
-                        #         ('class:error', str(list(((duplicate_id + "\n") for duplicate_id in e.duplicate_id_list))))
-                        #     ])
-                        #
-                        #     print_formatted_text(err_msg, style=style)
+                            #  get a normalize version of the time series
+                            norm_ts_list = normalize_ts_with_min_max(ts_list, global_min, global_max)
+
+                            global_norm_list = sc.parallelize(norm_ts_list)
 
 
             elif args[0] == 'save':  # TODO save changes to the GenexPlusProject pickle file
@@ -376,23 +373,23 @@ while 1:
                 if not os.path.isdir(SAVED_DATASET_DIR + os.sep + gp_project.get_project_name()):
                     os.mkdir(path_to_save)
 
-                if res_list is not None and time_series_dict is not None and normalized_ts_dict is not None:
+                if ts_list is not None and ts_dict is not None and normalized_ts_dict is not None:
                     print("saving pre-processing information")
 
                     t_filename = path_to_save + '/dict/' + 'time_series.pickle'
                     os.makedirs(os.path.dirname(t_filename), exist_ok=True)
                     with open(path_to_save + '/dict/' + 'time_series.pickle', 'wb') as handle:
-                        pickle.dump(time_series_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+                        pickle.dump(ts_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
                     n_filename = path_to_save + '/dict/' + 'normalized_time_series.pickle'
                     os.makedirs(os.path.dirname(n_filename), exist_ok=True)
                     with open(path_to_save + '/dict/' + 'normalized_time_series.pickle', 'wb') as handle:
                         pickle.dump(normalized_ts_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-                    r_filename = path_to_save + '/dict/' + 'res_list.pickle'
+                    r_filename = path_to_save + '/dict/' + 'ts_list.pickle'
                     os.makedirs(os.path.dirname(r_filename), exist_ok=True)
-                    with open(path_to_save + '/dict/' + 'res_list.pickle', 'wb') as handle:
-                        pickle.dump(res_list, handle, protocol=pickle.HIGHEST_PROTOCOL)
+                    with open(path_to_save + '/dict/' + 'ts_list.pickle', 'wb') as handle:
+                        pickle.dump(ts_list, handle, protocol=pickle.HIGHEST_PROTOCOL)
                     # gp_project_file = open(gp_project_fn, "wb")
                     # pickle.dump(gp_project, gp_project_file)
                     print("preprocessing information saved to " + path_to_save + "/dict/")
@@ -430,12 +427,29 @@ while 1:
 
                 print("Saving process finished")
 
+
+            elif args[0] == 'gac':  # gac stands for group&cluster
+                if gp_project is None:
+                    gp_not_opened_error()
+
+                elif sc is None:
+                    spark_context_not_set_error()
+                else:
+                    grouping_range = (1, max([len(v) for v in dict(norm_ts_list).values()]))
+                    group_rdd = global_norm_list.flatMap(
+                        lambda x: get_subsquences(x, grouping_range[0], grouping_range[1])).map(
+                        lambda x: (x[0], [x[1:]])).reduceByKey(
+                        lambda a, b: a + b)
+                    global_norm_dict = sc.broadcast(dict(norm_ts_list))
+                    cluster_rdd = group_rdd.map(lambda x: cluster(x[1], x[0], 0.1, global_norm_dict.value))
+
+
             elif args[0] == 'group':
                 if gp_project is None:
                     gp_not_opened_error()
                 elif sc is None:
                     spark_context_not_set_error()
-                elif res_list is None or time_series_dict is None or normalized_ts_dict is None:
+                elif ts_list is None or ts_dict is None or normalized_ts_dict is None:
                     get_arg_error()
                 else:
                     update_group = False
@@ -450,21 +464,16 @@ while 1:
                     # only group the time series that are at status: loaded
                     # ts_dict_to_be_grouped = gp_project.get_ungrouped_ts_dict()
                     if update_group or group_rdd is None:
-                        # TODO only grouping full length
-                        # load_broadcast_infor(normalized_ts_dict,time_series_dict,res_list)
-                        global_dict = sc.broadcast(normalized_ts_dict)
-                        # change naming here from time_series_dict to global_time_series_dict
-                        # because it might cause problem when saving
-                        global_time_series_dict = sc.broadcast(time_series_dict)
-                        global_dict_rdd = sc.parallelize(res_list[1:],
-                                                         numSlices=128)  # change the number of slices to mitigate larger datasets
+                        # norm_ts_list was set and parallelized in load
+                        grouping_range = (1, max([len(v) for v in dict(norm_ts_list).values()]))
 
-                        grouping_range = (1, max([len(v) for v in global_dict.value.values()]))
                         group_start_time = time.time()
-                        group_rdd = global_dict_rdd.flatMap(
+                        # global_norm_list was set in load
+                        group_rdd = global_norm_list.flatMap(
                             lambda x: get_subsquences(x, grouping_range[0], grouping_range[1])).map(
                             lambda x: (x[0], [x[1:]])).reduceByKey(
                             lambda a, b: a + b)
+
 
                         group_end_time = time.time()
                         print('group of timeseries from ' + str(grouping_range[0]) + ' to ' + str(
@@ -483,7 +492,7 @@ while 1:
                     spark_context_not_set_error()
                 elif group_rdd is None:
                     no_group_before_cluster_error()
-                # elif gp_project.time_series_dict is None:
+                # elif gp_project.ts_dict is None:
                 #     no_group_before_cluster_error()
                 else:
                     update_cluster = False
@@ -497,14 +506,14 @@ while 1:
                     if update_cluster or cluster_rdd is None:
                         print("Working on clustering")
                         cluster_start_time = time.time()
-                        global_dict = sc.broadcast(normalized_ts_dict)
-                        # change naming here from time_series_dict to global_time_series_dict
+                        global_normalized_dict = sc.broadcast(normalized_ts_dict)
+                        # change naming here from ts_dict to global_time_series_dict
                         # because it might cause problem when saving
-                        global_time_series_dict = sc.broadcast(time_series_dict)
-                        global_dict_rdd = sc.parallelize(res_list[1:],
+                        global_dict = sc.broadcast(ts_dict)
+                        global_dict_rdd = sc.parallelize(ts_list[1:],
                                                          numSlices=128)  # change the number of slices to mitigate larger datasets
 
-                        grouping_range = (1, max([len(v) for v in global_dict.value.values()]))
+                        grouping_range = (1, max([len(v) for v in global_normalized_dict.value.values()]))
 
                         # cluster_rdd_collected = cluster_rdd.collect()
                         # first_dict = cluster_rdd_reload[0]
@@ -516,7 +525,7 @@ while 1:
                             grouping_range[1]) + ' using ' + str(cluster_end_time - cluster_start_time) + ' seconds')
                         # TODO Question: why do we call cluster on the global_dict?
                         cluster_rdd = group_rdd.map(lambda x: cluster(x[1], x[0], 0.1,
-                                                                      global_dict.value))  # TODO have the user decide the similarity threshold
+                                                                      global_normalized_dict.value))  # TODO have the user decide the similarity threshold
 
                         # print("clustering done, saved to dataset")
 
@@ -552,17 +561,17 @@ while 1:
                     no_cluster_before_query_error()
                 else:
                     print("querying ")
-                    global_dict = sc.broadcast(normalized_ts_dict)
-                    # change naming here from time_series_dict to global_time_series_dict
+                    global_normalized_dict = sc.broadcast(normalized_ts_dict)
+                    # change naming here from ts_dict to global_time_series_dict
                     # because it might cause problem when saving
-                    global_time_series_dict = sc.broadcast(time_series_dict)
-                    global_dict_rdd = sc.parallelize(res_list[1:],
+                    global_dict = sc.broadcast(ts_dict)
+                    global_dict_rdd = sc.parallelize(ts_list[1:],
                                                      numSlices=128)  # change the number of slices to mitigate larger datasets
 
-                    grouping_range = (1, max([len(v) for v in global_dict.value.values()]))
+                    grouping_range = (1, max([len(v) for v in global_normalized_dict.value.values()]))
                     # print("grouping_range" + str(grouping_range))
                     query_id = '(2013e_001)_(100-0-Back)_(A-DC4)_(232665953.1250)_(232695953.1250)'
-                    query_sequence = get_data(query_id, 24, 117, global_time_series_dict.value)  # get an example query
+                    query_sequence = get_data(query_id, 24, 117, global_dict.value)  # get an example query
                     print(len(query_sequence))
                     # cluster_rdd.collect()
                     # repartition(16).
@@ -577,11 +586,11 @@ while 1:
                         lambda x: exclude_same_id(x, query_id)).repartition(32)
 
                     # clusters = cluster_rdd.collect()
-                    # query_result = cluster_rdd.filter(lambda x: x).map(lambda clusters: query(query_sequence, querying_range, clusters, k, time_series_dict.value)).collect()
+                    # query_result = cluster_rdd.filter(lambda x: x).map(lambda clusters: query(query_sequence, querying_range, clusters, k, ts_dict.value)).collect()
                     exclude_overlapping = True
                     query_result = filter_rdd.map(
                         lambda clusters: query(query_sequence, querying_range, clusters, k,
-                                               global_time_series_dict.value,
+                                               global_dict.value,
                                                exclude_overlapping,
                                                0.5)).collect()
                     # changed here
@@ -591,7 +600,7 @@ while 1:
                 if query_result is None:
                     no_query_result_before_plot()
                 else:
-                    plot_query_result(query_sequence, query_result, global_time_series_dict.value)
+                    plot_query_result(query_sequence, query_result, global_dict.value)
                     print("plot done")
 
             elif args[0] == 'exit':  # for user input 'exit'
@@ -605,6 +614,7 @@ while 1:
                 if sc is not None:
                     sc.stop()
                 break
+
             elif args[0] == 'delete':
                 # if gp_project is None:
                 #     message = FormattedText([

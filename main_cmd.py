@@ -67,8 +67,8 @@ def main(args):
         # add test for commit
         features_to_append = [0, 1, 2, 3, 4]
 
-        # res_list: list of raw time series data to be on distributed
-        # timeSeries: a dictionary version of as res_list, used for sebsequence look up
+        # ts_list: list of raw time series data to be on distributed
+        # timeSeries: a dictionary version of as ts_list, used for sebsequence look up
         res_list, time_series_dict, global_min, global_max = generate_source(file, features_to_append)
         print('processing dataset' + path[2])
         print("Global Max is " + str(global_max))
@@ -152,7 +152,7 @@ def main(args):
         print("clustering done, saved to dataset")
 
         # plot all the clusters
-        # plot_cluster(cluster_rdd_reload, 2, time_series_dict, 5)
+        # plot_cluster(cluster_rdd_reload, 2, ts_dict, 5)
 
         """
             ##### query
@@ -160,7 +160,7 @@ def main(args):
 
 
             The following line is for testing querying on one cluster
-            # query_result = query(query_sequence, cluster_rdd_reload[0], k, time_series_dict.value)
+            # query_result = query(query_sequence, cluster_rdd_reload[0], k, ts_dict.value)
 
         """
 

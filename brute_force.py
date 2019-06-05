@@ -11,10 +11,10 @@ def get_distance(func, *args):
 
 def best_match_ts(query, ts_dict):
     """
-    Applying the brute-force pattern to find the best match for the query from the set of the time_series_dict
+    Applying the brute-force pattern to find the best match for the query from the set of the ts_dict
 
     :param: query list
-    :param: time_series_dict
+    :param: ts_dict
 
     best_match: (type of dict) {key: time_series_ID, value: time_series_data, distance: similarity_distance(DTW Algorithm),
                                 best_path: side-product from dtw algorithm}
