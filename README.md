@@ -81,4 +81,13 @@ Java home set at /Library/Java/JavaVirtualMachines/jdk1.8.0_151.jdk/Contents/Hom
 If you see warnings in the message, you could ignore them for they won't affect the program's functionality.
 
 ## GenexPlus Project
-GenexPlus organizes user content under projects. 
+GenexPlus organizes user content under projects. To start, use the following command to open or create a GenexPlus Project:
+```
+open <project_name>
+```
+For example:
+```
+open example_project
+```
+If the project of given name is not found in Genex directory, you will be prompted if you wish to create a new project.
+
