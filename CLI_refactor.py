@@ -96,9 +96,15 @@ def no_cluster_before_query_error():
     ])
     print_formatted_text(err_msg, style=style)
 
+def no_load_before_group_error():
+    err_msg = FormattedText([
+        ('class:error', 'Please load the data before grouping'),
+    ])
+    print_formatted_text(err_msg, style=style)
+
 def get_arg_error():
     err_msg = FormattedText([
-        ('class:error', 'Please group the data before clustering'),
+        ('class:error', 'get arg error'),
     ])
     print_formatted_text(err_msg, style=style)
 
@@ -126,7 +132,8 @@ def create_new_project(SAVED_DATASET_DIR, args):
             os.makedirs(SAVED_DATASET_DIR + os.sep + args[1])
         except FileExistsError:
             # directory already exists
-            pass
+            # pass
+            exit(0)
 
 
 def load_broadcast_infor(normalized_ts_dict, time_series_dict, res_list):
@@ -179,14 +186,14 @@ while 1:
         prompt_message = [('class:prompt', 'GenexPlus >'),
                           ]
 
-        user_input = prompt(prompt_message,
+    user_input = prompt(prompt_message,
                             history=FileHistory('history.txt'),
                             auto_suggest=AutoSuggestFromHistory(),
                             completer=GPCompleter,
                             style=style
                             )
     # click.echo_via_pager(user_input)  # replaces the print statement via pager
-    message = ''
+    # message = ''
 
     if user_input is not None:
 
@@ -207,15 +214,19 @@ while 1:
                     else:
                         create_new_project(SAVED_DATASET_DIR, args)
                         gp_project = GenexPlusProject(args[1])
+                        # found_project = True
 
                     if found_project:
                         working_dir = None
                         sub_dir_list = [os.path.join(SAVED_DATASET_DIR, o) for o in os.listdir(SAVED_DATASET_DIR)
                                         if os.path.isdir(os.path.join(SAVED_DATASET_DIR, o))]
+                        print(sub_dir_list)
                         for valid_work_sub_dir in sub_dir_list:
+                            # print(valid_work_sub_dir)
                             if args[1] in valid_work_sub_dir:
+                                print(valid_work_sub_dir)
                                 working_dir = valid_work_sub_dir
-                                print("find a matching directory" + valid_work_sub_dir)
+                                # print("find a matching directory" + valid_work_sub_dir)
                                 index = valid_work_sub_dir.rfind(os.sep)
                                 gp_project = GenexPlusProject(valid_work_sub_dir[index + 1:])
                                 msg = FormattedText([
@@ -223,9 +234,11 @@ while 1:
                                 ])
                                 print_formatted_text(msg, style=style)
                         if working_dir:
+                            print("entered")
                             # find a name matching, want to verify which part is already done
                             try:
                                 if os.path.isdir(working_dir + '/dict/'):
+                                    print("1")
 
                                     preprocess_path = working_dir + '/dict/'
                                     if os.path.getsize(preprocess_path + 'time_series.pickle') > 0:
@@ -260,6 +273,8 @@ while 1:
                                         # print("some part of processing information missed")
                                 #         Group
                                 if os.path.isdir(working_dir + '/group/'):
+                                    print("2")
+
                                     if os.path.getsize(working_dir + '/group/') > 0:
                                         print("try to load group information from " + working_dir + '/group/' + "...")
                                         if sc:
@@ -271,6 +286,8 @@ while 1:
                                         print("group information missed")
                                 #         Cluster
                                 if os.path.isdir(working_dir + '/cluster/'):
+                                    print("3")
+
                                     if os.path.getsize(working_dir + '/cluster/') > 0:
                                         print(
                                             "try to load cluster information from " + working_dir + '/cluster/' + "...")
@@ -406,10 +423,10 @@ while 1:
                         if is_Update_group_infor == 'y':
                             # creating new GenexPlus project
                             shutil.rmtree(path_to_save + '/group/')
-                            group_rdd.saveAsPickleFile(path_to_save + '/group/')
+                            group_rdd.saveAspickleFile(path_to_save + '/group/')
 
                     else:
-                        group_rdd.saveAsPickleFile(path_to_save + '/group/')
+                        group_rdd.saveAspickleFile(path_to_save + '/group/')
                     print("group rdd information saved to " + path_to_save + '/group/')
                 else:
                     print("group not yet done")
@@ -420,9 +437,9 @@ while 1:
                         if is_Update_cluster_infor == 'y':
                             # creating new GenexPlus project
                             shutil.rmtree(path_to_save + '/cluster/')
-                            cluster_rdd.saveAsPickleFile(path_to_save + '/cluster/')
+                            cluster_rdd.saveAspickleFile(path_to_save + '/cluster/')
                     else:
-                        cluster_rdd.saveAsPickleFile(path_to_save + '/cluster/')
+                        cluster_rdd.saveAspickleFile(path_to_save + '/cluster/')
                     print("cluster rdd information saved to " + path_to_save + '/cluster/')
 
                 else:
@@ -470,6 +487,19 @@ while 1:
                         print('group of timeseries from ' + str(grouping_range[0]) + ' to ' + str(
                             grouping_range[1]) + ' using ' + str(
                             group_end_time - group_start_time) + ' seconds')
+                        path_to_save = SAVED_DATASET_DIR + os.sep + gp_project.get_project_name()
+
+                        if os.path.isdir(path_to_save + '/group/'):
+                            group_rdd = sc.pickleFile(path_to_save + '/group/')
+                            # filter_res_back = filter_rdd_back.collect()
+                            # filter_res = cluster_rdd.collect()
+                            print("group load back")
+                        else:
+
+                            group_rdd.saveAsPickleFile(path_to_save + '/group/')
+                            # filter_res = filter_rdd.collect()
+                            group_rdd = sc.pickleFile(path_to_save + '/group/')
+                            print("group first time")
                         # group_rdd_res = group_rdd.collect()
 
                         # gp_project.set_group_data(group_rdd_res, (group_end_time - group_start_time))
@@ -511,12 +541,25 @@ while 1:
                         # gp_project.set_cluster_data(cluster_rdd)  # save cluster information to the projecty
 
                         cluster_end_time = time.time()
+                        cluster_rdd = group_rdd.map(lambda x: cluster(x[1], x[0], 0.1,
+                                                                      global_dict.value))  # TODO have the user decide the similarity threshold
 
                         print('clustering of timeseries from ' + str(grouping_range[0]) + ' to ' + str(
                             grouping_range[1]) + ' using ' + str(cluster_end_time - cluster_start_time) + ' seconds')
                         # TODO Question: why do we call cluster on the global_dict?
-                        cluster_rdd = group_rdd.map(lambda x: cluster(x[1], x[0], 0.1,
-                                                                      global_dict.value))  # TODO have the user decide the similarity threshold
+                        path_to_save = SAVED_DATASET_DIR + os.sep + gp_project.get_project_name()
+
+                        if os.path.isdir(path_to_save + '/cluster/'):
+                            cluster_rdd = sc.pickleFile(path_to_save + '/cluster/')
+                            # filter_res_back = filter_rdd_back.collect()
+                            # filter_res = cluster_rdd.collect()
+                            print("cluster load back")
+                        else:
+
+                            cluster_rdd.saveAsPickleFile(path_to_save + '/cluster/')
+                            # filter_res = filter_rdd.collect()
+                            cluster_rdd = sc.pickleFile(path_to_save + '/cluster/')
+                            print("cluster first time")
 
                         # print("clustering done, saved to dataset")
 
@@ -579,7 +622,19 @@ while 1:
                     # clusters = cluster_rdd.collect()
                     # query_result = cluster_rdd.filter(lambda x: x).map(lambda clusters: query(query_sequence, querying_range, clusters, k, time_series_dict.value)).collect()
                     exclude_overlapping = True
-                    query_result = filter_rdd.map(
+                    path_to_save = SAVED_DATASET_DIR + os.sep + gp_project.get_project_name()
+                    if os.path.isdir(path_to_save + '/filter/'):
+                        filter_rdd_back = sc.pickleFile(path_to_save + '/filter/')
+                        # filter_res_back = filter_rdd_back.collect()
+                        filter_res = filter_rdd.collect()
+                        print("load back")
+                    else:
+
+                        filter_rdd.saveAsPickleFile(path_to_save + '/filter/')
+                        # filter_res = filter_rdd.collect()
+                        filter_rdd_back = sc.pickleFile(path_to_save + '/filter/')
+                        print("first time")
+                    query_result = filter_rdd_back.map(
                         lambda clusters: query(query_sequence, querying_range, clusters, k,
                                                global_time_series_dict.value,
                                                exclude_overlapping,
@@ -637,6 +692,6 @@ while 1:
                              'there is no such project, please double check')])
                         print_formatted_text(err_msg, style=style)
 
-    print_formatted_text(message, style=style)
+    # print_formatted_text(message, style=style)
+# TODO progress bar
 
-    # TODO progress bar

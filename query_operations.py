@@ -32,7 +32,7 @@ def query(query_sequence, query_range, cluster, k, time_series_dict, exclude_ove
                 min_rprs = cur_rprs
                 min_dist = cur_dist
         else:
-            continue
+            pass
 
     if min_rprs:
         print('min representative is ' + min_rprs.id)

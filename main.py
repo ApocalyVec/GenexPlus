@@ -66,7 +66,7 @@ if __name__ == '__main__':
     global_dict = sc.broadcast(normalized_ts_dict)
     time_series_dict = sc.broadcast(time_series_dict)
 
-    global_dict_rdd = sc.parallelize(res_list[1:], numSlices= 1500)
+    global_dict_rdd = sc.parallelize(res_list[1:], numSlices= 128)
     # global_dict_res = global_dict_rdd.collect()
     # finish grouping here, result in a key, value pair where
     # key is the length of sub-sequence, value is the [id of source time series, start_point, end_point]
@@ -79,11 +79,12 @@ if __name__ == '__main__':
     group_rdd_res: list: items = (length, time series list) -> time series list: items = (id, start, end)
     """
 
-    grouping_range = (89, 90)
+    grouping_range = (148, 150)
     group_rdd = global_dict_rdd.flatMap(lambda x: get_subsquences(x, grouping_range[0], grouping_range[1])).map(
         lambda x: (x[0], [x[1:]])).reduceByKey(
-        lambda a, b: a + b)
-    group_rdd_res = group_rdd.collect()
+        lambda a, b: a + b).saveAsTextFile(path_save_res)
+    group_back = sc.textFile(path_save_res)
+    group_rdd_res = group_back.collect()
     print("grouping done")
 
     """
