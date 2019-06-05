@@ -489,7 +489,7 @@ while 1:
                             group_end_time - group_start_time) + ' seconds')
                         path_to_save = SAVED_DATASET_DIR + os.sep + gp_project.get_project_name()
 
-                        if os.path.isdir(path_to_save + '/group/'):
+                        if os.path.isdir(path_to_save + '/group/') and len(os.listdir(path_to_save + '/group/')) != 0:
                             group_rdd = sc.pickleFile(path_to_save + '/group/')
                             # filter_res_back = filter_rdd_back.collect()
                             # filter_res = cluster_rdd.collect()
@@ -531,37 +531,40 @@ while 1:
                         # change naming here from time_series_dict to global_time_series_dict
                         # because it might cause problem when saving
                         global_time_series_dict = sc.broadcast(time_series_dict)
-                        global_dict_rdd = sc.parallelize(res_list[1:],
+                        if not res_list:
+                            no_load_before_group_error()
+                        else:
+                            global_dict_rdd = sc.parallelize(res_list[1:],
                                                          numSlices=128)  # change the number of slices to mitigate larger datasets
 
-                        grouping_range = (1, max([len(v) for v in global_dict.value.values()]))
+                            grouping_range = (1, max([len(v) for v in global_dict.value.values()]))
 
                         # cluster_rdd_collected = cluster_rdd.collect()
                         # first_dict = cluster_rdd_reload[0]
                         # gp_project.set_cluster_data(cluster_rdd)  # save cluster information to the projecty
 
-                        cluster_end_time = time.time()
-                        cluster_rdd = group_rdd.map(lambda x: cluster(x[1], x[0], 0.1,
+                            cluster_end_time = time.time()
+                            cluster_rdd = group_rdd.map(lambda x: cluster(x[1], x[0], 0.1,
                                                                       global_dict.value))  # TODO have the user decide the similarity threshold
 
-                        print('clustering of timeseries from ' + str(grouping_range[0]) + ' to ' + str(
+                            print('clustering of timeseries from ' + str(grouping_range[0]) + ' to ' + str(
                             grouping_range[1]) + ' using ' + str(cluster_end_time - cluster_start_time) + ' seconds')
                         # TODO Question: why do we call cluster on the global_dict?
-                        path_to_save = SAVED_DATASET_DIR + os.sep + gp_project.get_project_name()
+                            path_to_save = SAVED_DATASET_DIR + os.sep + gp_project.get_project_name()
 
-                        if os.path.isdir(path_to_save + '/cluster/'):
-                            cluster_rdd = sc.pickleFile(path_to_save + '/cluster/')
-                            # filter_res_back = filter_rdd_back.collect()
-                            # filter_res = cluster_rdd.collect()
-                            print("cluster load back")
-                        else:
+                            if os.path.isdir(path_to_save + '/cluster/') and len(os.listdir(path_to_save + '/cluster/')) != 0:
+                                cluster_rdd = sc.pickleFile(path_to_save + '/cluster/')
+                                # filter_res_back = filter_rdd_back.collect()
+                                # filter_res = cluster_rdd.collect()
+                                print("cluster load back")
+                            else:
 
-                            cluster_rdd.saveAsPickleFile(path_to_save + '/cluster/')
-                            # filter_res = filter_rdd.collect()
-                            cluster_rdd = sc.pickleFile(path_to_save + '/cluster/')
-                            print("cluster first time")
+                                cluster_rdd.saveAsPickleFile(path_to_save + '/cluster/')
+                                # filter_res = filter_rdd.collect()
+                                cluster_rdd = sc.pickleFile(path_to_save + '/cluster/')
+                                print("cluster first time")
 
-                        # print("clustering done, saved to dataset")
+                            # print("clustering done, saved to dataset")
 
 
             elif args[0] == 'get':
@@ -617,13 +620,13 @@ while 1:
                     if querying_range[0] < grouping_range[0] or querying_range[1] > grouping_range[1]:
                         raise Exception("query_operations: query: Query range does not match group range")
                     filter_rdd = cluster_rdd.filter(lambda x: include_in_range(x, querying_range)).filter(
-                        lambda x: exclude_same_id(x, query_id)).repartition(32)
+                        lambda x: exclude_same_id(x, query_id))
 
                     # clusters = cluster_rdd.collect()
                     # query_result = cluster_rdd.filter(lambda x: x).map(lambda clusters: query(query_sequence, querying_range, clusters, k, time_series_dict.value)).collect()
                     exclude_overlapping = True
                     path_to_save = SAVED_DATASET_DIR + os.sep + gp_project.get_project_name()
-                    if os.path.isdir(path_to_save + '/filter/'):
+                    if os.path.isdir(path_to_save + '/filter/') and len(os.listdir(path_to_save + '/filter/')) != 0:
                         filter_rdd_back = sc.pickleFile(path_to_save + '/filter/')
                         # filter_res_back = filter_rdd_back.collect()
                         filter_res = filter_rdd.collect()
@@ -634,7 +637,7 @@ while 1:
                         # filter_res = filter_rdd.collect()
                         filter_rdd_back = sc.pickleFile(path_to_save + '/filter/')
                         print("first time")
-                    query_result = filter_rdd_back.map(
+                    query_result = filter_rdd_back.repartition(16).map(
                         lambda clusters: query(query_sequence, querying_range, clusters, k,
                                                global_time_series_dict.value,
                                                exclude_overlapping,
