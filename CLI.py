@@ -42,7 +42,7 @@ import pickle
 # commands
 from pyspark import SparkContext, SparkConf
 
-from CLIExceptions import DuplicateIDError
+from CLI_exceptions import DuplicateIDError
 from GenexPlusProject import GenexPlusProject
 from cluster_operations import cluster
 from data_operations import normalize_ts_with_min_max, get_data

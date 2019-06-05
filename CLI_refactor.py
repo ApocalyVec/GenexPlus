@@ -43,7 +43,10 @@ import pickle
 # commands
 from pyspark import SparkContext, SparkConf
 
-from CLIExceptions import DuplicateIDError
+from CLI import spark_context_not_set_error, gp_not_opened_error, load_file_not_found_error, get_arg_error, \
+    no_group_before_cluster_error
+from CLI_errors import no_cluster_before_query_error, no_query_result_before_plot
+from CLI_exceptions import DuplicateIDError
 from GenexPlusProject import GenexPlusProject
 from cluster_operations import cluster
 from data_operations import normalize_ts_with_min_max, get_data
@@ -73,45 +76,6 @@ style = Style.from_dict({
 })
 
 
-def gp_not_opened_error():
-    err_msg = FormattedText([
-        ('class:error', 'No GenexPlus Project Opened, please use the open command to open a GenexPlus Project'),
-    ])
-    print_formatted_text(err_msg, style=style)
-
-
-def spark_context_not_set_error():
-    err_msg = FormattedText([
-        ('class:error', 'Spark Context not set, please use set command to set spark context'),
-    ])
-    print_formatted_text(err_msg, style=style)
-
-
-def no_group_before_cluster_error():
-    err_msg = FormattedText([
-        ('class:error', 'Please group the data before clustering'),
-    ])
-    print_formatted_text(err_msg, style=style)
-
-def no_cluster_before_query_error():
-    err_msg = FormattedText([
-        ('class:error', 'Please cluster the data before querying'),
-    ])
-    print_formatted_text(err_msg, style=style)
-
-def get_arg_error():
-    err_msg = FormattedText([
-        ('class:error', 'Please group the data before clustering'),
-    ])
-    print_formatted_text(err_msg, style=style)
-
-def load_file_not_found_error(missing_file):
-    err_msg = FormattedText([
-        ('class:error',
-         'File ' + missing_file + ' not found'),
-    ])
-    print_formatted_text(err_msg, style=style)
-
 def create_new_project(SAVED_DATASET_DIR, args):
     isCreateNewProject = prompt("Project " + args[
         1] + " does not exit, would you like to create a new GenexPlus Project? [y/n]")
@@ -123,6 +87,7 @@ def create_new_project(SAVED_DATASET_DIR, args):
         except FileExistsError:
             # directory already exists
             pass
+
 
 def load_broadcast_infor(normalized_ts_dict, time_series_dict, res_list):
     if sc is None:
@@ -138,12 +103,6 @@ def load_broadcast_infor(normalized_ts_dict, time_series_dict, res_list):
 
         grouping_range = (1, max([len(v) for v in global_dict.value.values()]))
 
-def no_query_result_before_plot():
-    err_msg = FormattedText([
-        ('class:error',
-         'Please get query result before plot it'),
-    ])
-    print_formatted_text(err_msg, style=style)
 
 class GPCompleter(Completer):
     def get_completions(self, document, complete_evennt):
@@ -180,18 +139,18 @@ while 1:
         prompt_message = [('class:prompt', 'GenexPlus >'),
                           ]
 
-    user_input = prompt(prompt_message,
-                        history=FileHistory('history.txt'),
-                        auto_suggest=AutoSuggestFromHistory(),
-                        completer=GPCompleter,
-                        style=style
-                        )
+        user_input = prompt(prompt_message,
+                            history=FileHistory('history.txt'),
+                            auto_suggest=AutoSuggestFromHistory(),
+                            completer=GPCompleter,
+                            style=style
+                            )
     # click.echo_via_pager(user_input)  # replaces the print statement via pager
     message = ''
 
     if user_input is not None:
-        args = user_input.split()
 
+        args = user_input.split()
         if len(args) != 0:
 
             if args[0] == 'open':  # for user input 'open', open a existing or creat a new gp project
@@ -201,12 +160,10 @@ while 1:
                     ])
                     print_formatted_text(err_msg, style=style)
                 else:
-                    found_project  = False
+                    found_project = False
                     if os.path.isdir(SAVED_DATASET_DIR + os.sep + args[1]):
                         print("Project already exist")
                         found_project = True
-                        # print("Opening " + args[1])
-                        # saved_dataset_dir = './res/saved_dataset'
                     else:
                         create_new_project(SAVED_DATASET_DIR, args)
                         gp_project = GenexPlusProject(args[1])
@@ -214,7 +171,7 @@ while 1:
                     if found_project:
                         working_dir = None
                         sub_dir_list = [os.path.join(SAVED_DATASET_DIR, o) for o in os.listdir(SAVED_DATASET_DIR)
-                             if os.path.isdir(os.path.join(SAVED_DATASET_DIR, o))]
+                                        if os.path.isdir(os.path.join(SAVED_DATASET_DIR, o))]
                         for valid_work_sub_dir in sub_dir_list:
                             if args[1] in valid_work_sub_dir:
                                 working_dir = valid_work_sub_dir
@@ -226,13 +183,14 @@ while 1:
                                 ])
                                 print_formatted_text(msg, style=style)
                         if working_dir:
-                        #     find a name matching, want to verify which part is already done
+                            # find a name matching, want to verify which part is already done
                             try:
                                 if os.path.isdir(working_dir + '/dict/'):
 
                                     preprocess_path = working_dir + '/dict/'
-                                    if os.path.getsize( preprocess_path + 'time_series.pickle') > 0:
-                                        print("try to load time series information from " + working_dir + '/dict/' + "...")
+                                    if os.path.getsize(preprocess_path + 'time_series.pickle') > 0:
+                                        print(
+                                            "try to load time series information from " + working_dir + '/dict/' + "...")
                                         with open(preprocess_path + 'time_series.pickle', 'rb') as handle:
                                             time_series_dict = pickle.load(handle)
                                     if os.path.getsize(preprocess_path + 'normalized_time_series.pickle') > 0:
@@ -245,7 +203,8 @@ while 1:
 
                                         # print("load time series information successfully from " + preprocess_path)
                                         msg = FormattedText([
-                                            ('class:file', "load time series information successfully from " + preprocess_path)
+                                            ('class:file',
+                                             "load time series information successfully from " + preprocess_path)
                                         ])
                                         print_formatted_text(msg, style=style)
 
@@ -273,7 +232,8 @@ while 1:
                                 #         Cluster
                                 if os.path.isdir(working_dir + '/cluster/'):
                                     if os.path.getsize(working_dir + '/cluster/') > 0:
-                                        print("try to load cluster information from " + working_dir + '/cluster/' + "...")
+                                        print(
+                                            "try to load cluster information from " + working_dir + '/cluster/' + "...")
                                         # cluster_rdd_reload = sc.pickleFile(working_dir + '/cluster/')
                                         # print("load cluster information successfully")
                                         if sc:
@@ -300,16 +260,13 @@ while 1:
                         # else:
                         #     print("This file is empty")
 
-
-
             elif args[0] == 'close':  # close opened gp_project
                 if gp_project is not None:
-                    print("Closing" + gp_project.get_project_name())
+                    print("Closing " + gp_project.get_project_name())
                     gp_project = None
 
-
-            elif args[0] == 'set':  # close opened gp_project
-                if len(args) != 2:  # if wronge number of arguments is given
+            elif args[0] == 'set':  # set Java Home
+                if len(args) != 2:  # if wrong number of arguments is given
                     err_msg = FormattedText([
                         ('class:error',
                          'Wrong number of arguments, please specify the path to Java Home (the number of cores is no '
@@ -322,7 +279,6 @@ while 1:
 
                     conf = SparkConf().setAppName("GenexPlus").setMaster("local[*]")  # using all available cores
                     sc = SparkContext(conf=conf)
-                    # sc = SparkContext('' + 'local' + '[' + str(num_cores) + ']' + '', "GenexPlus")
                     print("Java home set at " + java_home_path)
 
             elif args[0] == 'load':  # load given csv file
@@ -343,8 +299,10 @@ while 1:
                     else:
                         update_pre_processing = False
                         if res_list is not None and time_series_dict is not None and normalized_ts_dict is not None:
+
                             is_Update_pre_infor = prompt("Project " + args[
                                 1] + " pre-processing information exist, would you like to update ? [y/n]")
+
                             if is_Update_pre_infor == 'y':
                                 # creating new GenexPlus project
                                 update_pre_processing = True
@@ -352,12 +310,12 @@ while 1:
 
                         # change here
                         if update_pre_processing or not res_list or not time_series_dict or not normalized_ts_dict:
-                                res_list, time_series_dict, global_min, global_max = generate_source(args[1],
-                                                                                        features_to_append)
-                                print("loaded file " + args[1])
-                                print("Global Max is " + str(global_max))
-                                print("Global Min is " + str(global_min))
-                                normalized_ts_dict = normalize_ts_with_min_max(time_series_dict, global_min, global_max)
+                            res_list, time_series_dict, global_min, global_max = generate_source(args[1],
+                                                                                                 features_to_append)
+                            print("loaded file " + args[1])
+                            print("Global Max is " + str(global_max))
+                            print("Global Min is " + str(global_min))
+                            normalized_ts_dict = normalize_ts_with_min_max(time_series_dict, global_min, global_max)
 
                         # gp_project.save_time_series(time_series_dict, normalized_ts_dict, args[1])  # TODO include load history
                         # ???????
@@ -375,7 +333,7 @@ while 1:
 
             elif args[0] == 'save':  # TODO save changes to the GenexPlusProject pickle file
                 path_to_save = SAVED_DATASET_DIR + os.sep + gp_project.get_project_name()
-                if not os.path.isdir(SAVED_DATASET_DIR + os.sep +  gp_project.get_project_name()):
+                if not os.path.isdir(SAVED_DATASET_DIR + os.sep + gp_project.get_project_name()):
                     os.mkdir(path_to_save)
 
                 if res_list is not None and time_series_dict is not None and normalized_ts_dict is not None:
@@ -395,8 +353,8 @@ while 1:
                     os.makedirs(os.path.dirname(r_filename), exist_ok=True)
                     with open(path_to_save + '/dict/' + 'res_list.pickle', 'wb') as handle:
                         pickle.dump(res_list, handle, protocol=pickle.HIGHEST_PROTOCOL)
-                # gp_project_file = open(gp_project_fn, "wb")
-                # pickle.dump(gp_project, gp_project_file)
+                    # gp_project_file = open(gp_project_fn, "wb")
+                    # pickle.dump(gp_project, gp_project_file)
                     print("preprocessing information saved to " + path_to_save + "/dict/")
                 if sc is None:
                     spark_context_not_set_error()
@@ -409,8 +367,6 @@ while 1:
                             # creating new GenexPlus project
                             shutil.rmtree(path_to_save + '/group/')
                             group_rdd.saveAsPickleFile(path_to_save + '/group/')
-
-
 
                     else:
                         group_rdd.saveAsPickleFile(path_to_save + '/group/')
@@ -432,7 +388,6 @@ while 1:
                 else:
                     print("cluster not yet done")
 
-
                 print("Saving process finished")
 
             elif args[0] == 'group':
@@ -446,7 +401,8 @@ while 1:
                     update_group = False
                     if group_rdd:
 
-                        is_Update_group_infor = prompt("Project " + gp_project.get_project_name() + "r's group information exist, would you like to update ? [y/n]")
+                        is_Update_group_infor = prompt(
+                            "Project " + gp_project.get_project_name() + "r's group information exist, would you like to update ? [y/n]")
                         if is_Update_group_infor == 'y':
                             # creating new GenexPlus project
                             update_group = True
@@ -454,7 +410,6 @@ while 1:
                     # only group the time series that are at status: loaded
                     # ts_dict_to_be_grouped = gp_project.get_ungrouped_ts_dict()
                     if update_group or group_rdd is None:
-
                         # TODO only grouping full length
                         # load_broadcast_infor(normalized_ts_dict,time_series_dict,res_list)
                         global_dict = sc.broadcast(normalized_ts_dict)
@@ -493,7 +448,8 @@ while 1:
                 else:
                     update_cluster = False
                     if cluster_rdd:
-                        is_Update_cluster_infor = prompt("Project " + gp_project.get_project_name() + "r's cluster information exist, would you like to update ? [y/n]")
+                        is_Update_cluster_infor = prompt(
+                            "Project " + gp_project.get_project_name() + "r's cluster information exist, would you like to update ? [y/n]")
                         if is_Update_cluster_infor == 'y':
                             # creating new GenexPlus project
                             update_cluster = True
@@ -580,11 +536,12 @@ while 1:
                     filter_rdd = cluster_rdd.filter(lambda x: include_in_range(x, querying_range)).filter(
                         lambda x: exclude_same_id(x, query_id)).repartition(32)
 
-                        # clusters = cluster_rdd.collect()
+                    # clusters = cluster_rdd.collect()
                     # query_result = cluster_rdd.filter(lambda x: x).map(lambda clusters: query(query_sequence, querying_range, clusters, k, time_series_dict.value)).collect()
                     exclude_overlapping = True
                     query_result = filter_rdd.map(
-                        lambda clusters: query(query_sequence, querying_range, clusters, k, global_time_series_dict.value,
+                        lambda clusters: query(query_sequence, querying_range, clusters, k,
+                                               global_time_series_dict.value,
                                                exclude_overlapping,
                                                0.5)).collect()
                     # changed here
@@ -633,13 +590,12 @@ while 1:
                         print("try delete project " + args[1])
                     try:
                         shutil.rmtree(SAVED_DATASET_DIR + os.sep + args[1])
-                        print("project " +  args[1] + "deleted")
+                        print("project " + args[1] + "deleted")
                     except FileNotFoundError:
                         err_msg = FormattedText([
                             ('class:error',
                              'there is no such project, please double check')])
                         print_formatted_text(err_msg, style=style)
-
 
     print_formatted_text(message, style=style)
 
