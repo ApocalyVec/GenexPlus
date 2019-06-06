@@ -48,8 +48,8 @@ if __name__ == '__main__':
     # add test for commit
     features_to_append = [0, 1, 2, 3, 4]
 
-    # res_list: list of raw time series data to be on distributed
-    # timeSeries: a dictionary version of as res_list, used for sebsequence look up
+    # ts_list: list of raw time series data to be on distributed
+    # timeSeries: a dictionary version of as ts_list, used for sebsequence look up
     res_list, time_series_dict, global_min, global_max = generate_source(file, features_to_append)
     print("Global Max is " + str(global_max))
     print("Global Min is " + str(global_min))
@@ -114,7 +114,7 @@ if __name__ == '__main__':
 
 
     # plot all the clusters
-    # plot_cluster(cluster_rdd_reload, 2, time_series_dict, 5)
+    # plot_cluster(cluster_rdd_reload, 2, ts_dict, 5)
 
     """
         ##### query
@@ -122,13 +122,13 @@ if __name__ == '__main__':
 
 
         The following line is for testing querying on one cluster
-        # query_result = query(query_sequence, cluster_rdd_reload[0], k, time_series_dict.value)
+        # query_result = query(query_sequence, cluster_rdd_reload[0], k, ts_dict.value)
 
     """
     # # '(001-SART-August2017-MB)_(211-Current-Item:-3)_(A-DC1)_(64434.0)_(105950.0)'
     # # '(2013e_001)_(100-0-Back)_(B-DC8)_(232665953.1250)'
     # query_id = '(001-SART-August2017-MB)_(211-Current-Item:-3)_(A-DC1)_(64434.0)_(105950.0)'
-    # query_sequence = get_data(query_id, 24, 117, time_series_dict.value)  # get an example query
+    # query_sequence = get_data(query_id, 24, 117, ts_dict.value)  # get an example query
     # filter_rdd = cluster_rdd.filter(lambda x: exclude_same_id(x, query_id))
     # # raise exception if the query_range exceeds the grouping range
     # querying_range = (90, 91)
@@ -136,13 +136,13 @@ if __name__ == '__main__':
     # if querying_range[0] < grouping_range[0] or querying_range[1] > grouping_range[1]:
     #     raise Exception("query_operations: query: Query range does not match group range")
     #
-    # # query_result = cluster_rdd.filter(lambda x: x).map(lambda clusters: query(query_sequence, querying_range, clusters, k, time_series_dict.value)).collect()
+    # # query_result = cluster_rdd.filter(lambda x: x).map(lambda clusters: query(query_sequence, querying_range, clusters, k, ts_dict.value)).collect()
     # exclude_overlapping = True
     # query_result = filter_rdd.map(
-    #     lambda clusters: query(query_sequence, querying_range, clusters, k, time_series_dict.value, exclude_overlapping,
+    #     lambda clusters: query(query_sequence, querying_range, clusters, k, ts_dict.value, exclude_overlapping,
     #                            0.5)).collect()
     #
-    # plot_query_result(query_sequence, query_result, time_series_dict.value)
+    # plot_query_result(query_sequence, query_result, ts_dict.value)
     #
     # sc.stop()
     print("Using Twopass")

@@ -1,3 +1,5 @@
+fuzzyfinder
+prompt_toolkit
 cycler==0.10.0
 fastdtw==0.3.2
 kiwisolver==1.0.1

@@ -17,7 +17,6 @@ style = Style.from_dict({
     # 'path':     'ansicyan underline',
 })
 
-
 def gp_not_opened_error():
     err_msg = FormattedText([
         ('class:error', 'No GenexPlus Project Opened, please use the open command to open a GenexPlus Project'),
@@ -38,17 +37,27 @@ def no_group_before_cluster_error():
     ])
     print_formatted_text(err_msg, style=style)
 
+
 def no_cluster_before_query_error():
     err_msg = FormattedText([
         ('class:error', 'Please cluster the data before querying'),
     ])
     print_formatted_text(err_msg, style=style)
 
-def get_arg_error():
+
+def no_load_before_group_error():
     err_msg = FormattedText([
-        ('class:error', 'Please group the data before clustering'),
+        ('class:error', 'Please load the data before grouping'),
     ])
     print_formatted_text(err_msg, style=style)
+
+
+def get_arg_error():
+    err_msg = FormattedText([
+        ('class:error', 'get arg error'),
+    ])
+    print_formatted_text(err_msg, style=style)
+
 
 def load_file_not_found_error(missing_file):
     err_msg = FormattedText([
@@ -56,6 +65,7 @@ def load_file_not_found_error(missing_file):
          'File ' + missing_file + ' not found'),
     ])
     print_formatted_text(err_msg, style=style)
+
 
 def no_query_result_before_plot():
     err_msg = FormattedText([
