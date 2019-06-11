@@ -1,93 +1,93 @@
-import datetime
-
 from dtaidistance import dtw  # source code https://github.com/wannesm/dtaidistance
 
+from data_operations import *
 from group_operations import generate_source
+from time_series_obj import *
 
 
-def get_distance(func, *args):
-    distance, paths = func(*args)
-    return distance
-
-def best_match_ts(query, ts_dict):
+def brute_force(query_list, ts_list, top_k=None, threshold=None, overlapping=None, dis_type=None, exclude_id=False):
     """
-    Applying the brute-force pattern to find the best match for the query from the set of the ts_dict
-
-    :param: query list
-    :param: ts_dict
-
-    best_match: (type of dict) {key: time_series_ID, value: time_series_data, distance: similarity_distance(DTW Algorithm),
-                                best_path: side-product from dtw algorithm}
-    :return: best_match_list [{bm_dict1}, {bm_dict2}, {bm_dict3}], .....]
+    :param query_list: a list of key-value pair pattern [key, [p1,p2,p3....]]
+    :param ts_list: lists of key-value pairs [[key,[points]],
+                                              [key,[points]],
+                                              [key,[points]]......]
+    :return: a list of time_series_obj objects each of them store the id, start point, end point for the matched ts
     """
-    query_len = len(query)
 
-    best_match_list = []
+    def get_distance(func, *args):
+        distance, paths = func(*args)
+        return distance
 
-    best_of_so_far = float('inf')
+    def set_dis_type():
+        pass
 
+    def slice_ts(ts_key, ts_value, length, overlapping=None):
 
-    start_time = datetime.datetime.now()
+        if overlapping:
+            pass
+        # TODO
+        else:
+            amount = len(ts_value) - length + 1
 
-    for key, value in ts_dict.items():
-        candidates = slice_list(value, query_len)
+            for i in range(amount):
+                yield TimeSeriesObj(ts_key, i, i + length)
 
-        candidates.sort(key=lambda each: get_distance(dtw.warping_paths, each, query))
+    query_v = query_list[1]
+    query_len = len(query_v)
+    query_id = query_list[0]
 
+    result_ls = []
+    min_dis = float('inf')
 
-        for i in range(len(candidates)):
-            distance, paths = dtw.warping_paths(query, candidates[i])
+    ts_dict = dict(ts_list)
 
-            if distance < best_of_so_far:
-                best_match = dict()
+    # Excluding the same ID from the candidates ts
+    if exclude_id is True:
+        ts_dict.pop(query_id)
 
-                best_of_so_far = distance
-                best_match['ts_id'] = key
-                best_match['value'] = candidates[i]
-                best_match['distance'] = distance
-                best_match['best_path'] = dtw.best_path(paths)
+    # Setting the threshold for later query process
+    if threshold:
+        min_dis = threshold
 
-                best_match_list.append(best_match)
+    for k, v in ts_dict.items():
+        # Adding overlapping para into the slice function
+        for sublist in slice_ts(k, v, query_len):
+            points = get_data_for_timeSeriesObj(sublist, ts_dict)
 
-            else:
-                break
+            distance = get_distance(dtw.warping_paths, points, query_v)
 
-    for match in best_match_list:
-        if match['distance'] > best_of_so_far:
-            best_match_list.remove(match)
+            if distance < min_dis:
+                result_ls.append(sublist)
 
-    end_time = datetime.datetime.now()
-    print("Time period of the execution for the brute_force: " + str((end_time - start_time).microseconds) + "ms")
+                if not threshold:
+                    min_dis = distance
 
-    return best_match_list
+    if not threshold:
+        result_ls = [ls for ls in result_ls
+                     if get_distance(dtw.warping_paths, get_data_for_timeSeriesObj(ls, ts_dict), query_v) <= min_dis]
 
+    if top_k and top_k < len(result_ls):
+        result_ls.sort(
+            key=lambda each: get_distance(dtw.warping_paths, get_data_for_timeSeriesObj(each, ts_dict), query_v))
+        result_ls = result_ls[:top_k]
 
-def slice_list(ts_list, length):
-    """
-    A helper method used to slice one time_series list into multiple sublist based on the value of the second parameter
-
-    :param ts_list: one time_series list
-    :param length: the length of one sublist
-
-    :return: one sliced time_series includes all of the candidates of the input time_series
-
-    For example:
-    input = [1,3,4,5,6,7,8,4,5,67,5]
-    length = 3
-
-    result = [[1, 3, 4], [3, 4, 5], [4, 5, 6], [5, 6, 7], [6, 7, 8], [7, 8, 4], [8, 4, 5], [4, 5, 67], [5, 67, 5]]
-    """
-    number_of_sublist = len(ts_list) - length + 1
-
-    sliced_list = []
-
-    for i in range(number_of_sublist):
-        sliced_list.append(ts_list[i:i+length])
-
-    return sliced_list
+    return result_ls
 
 
 if __name__ == '__main__':
     features_to_append = [0, 1, 2, 3, 4]
-    res_list, time_series_dict, global_min, global_max = generate_source('2013e_001_2_channels_02backs.csv',
-                                                                         features_to_append)
+    time_series_list, global_min, global_max = generate_source('2013e_001_2_channels_02backs.csv', features_to_append)
+
+    time_series_list = normalize_ts_with_min_max(time_series_list, global_min, global_max)
+    time_series_dict = dict(time_series_list)
+
+    id = '(2013e_001)_(100-0-Back)_(A-DC4)_(232665953.1250)_(232695953.1250)'
+
+    query = get_data(id, 3, 10, time_series_dict)
+    query_ls = [id, query]
+    print(query_ls)
+
+    match = brute_force(query_ls, time_series_list)
+    resl = get_data_for_timeSeriesObj(match[0], time_series_dict)
+
+    print()
