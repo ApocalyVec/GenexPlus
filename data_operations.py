@@ -1,7 +1,7 @@
 import math
 
 
-def get_data(tid, start, end, time_series_dict):
+def get_data(tid, time_series_dict, start=None, end=None):
     """
 
     :param id:
@@ -16,7 +16,10 @@ def get_data(tid, start, end, time_series_dict):
     if tid not in time_series_dict.keys():
         raise Exception("data_operations: get_data: subsequnce of ID " + tid + " not found in TimeSeries!")
     else:
-        return time_series_dict[tid][start:end]
+        if start is None or end is None:
+            return time_series_dict[tid][:]
+        else:
+            return time_series_dict[tid][start:end]
 
 
 def get_data_for_timeSeriesObj(time_series_obj, time_series_dict):
