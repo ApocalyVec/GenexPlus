@@ -15,13 +15,12 @@ def query(query_sequence, query_range, cluster, k, time_series_dict, exclude_ove
     :return list of time series objects: best k matches. Again note they are all of the SAME length
     TODO change the the for-loop (looking for closest representative) to sort
     pseudo code for the query procedures:
-    abbreviation: rprs = representative
 
     input = query, best_k
         closest_rprs_so_far = None
-        for representatives in cluster_representatives:
-            if distance_between(query, representatives) less than distance_between(query, closest_rprs_so_far) then:
-                closest_rprs_so_far <- representatives
+        for rprs in cluster_representatives:
+            if distance_between(query, rprs) less than distance_between(query, closest_rprs_so_far) then:
+                closest_rprs_so_far <- rprs
 
         if closest_rprs_so_far is not None then:
             target_cluster <= get_cluster_represented(closest_rprs_so_far)
