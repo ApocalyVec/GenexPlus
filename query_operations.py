@@ -1,5 +1,8 @@
 import math
-
+import os
+from tkinter import filedialog
+import tkinter as tk
+from click._compat import raw_input
 
 from classifier_operations import sim_between_seq
 from data_operations import get_data, get_data_for_timeSeriesObj
@@ -7,7 +10,7 @@ from filter_operation import exclude_overlapping
 from load_txt import strip_function, remove_trailing_zeros
 
 
-def query(query_sequence, query_range, cluster, k, time_series_dict, exclude_overlap, percentage = 1):
+def query(query_sequence, query_range, cluster, k, time_series_dict, exclude_overlap, percentage=1):
     """
 
     :param query_sequence: list of data: the sequence to be queried
@@ -45,7 +48,9 @@ def query(query_sequence, query_range, cluster, k, time_series_dict, exclude_ove
         print("sorting")
 
         # this sorting is taking a long time!
-        target_cluster.sort(key=lambda cluster_sequence: sim_between_seq(query_sequence, get_data_for_timeSeriesObj(cluster_sequence, time_series_dict)))
+        target_cluster.sort(key=lambda cluster_sequence: sim_between_seq(query_sequence,
+                                                                         get_data_for_timeSeriesObj(cluster_sequence,
+                                                                                                    time_series_dict)))
     #     use a heap?
     #     use quickselect
     #     similar question to k closet point to origin
@@ -59,9 +64,11 @@ def query(query_sequence, query_range, cluster, k, time_series_dict, exclude_ove
         return target_cluster[0:k]  # return the k most similar sequences
     # else:
     #     raise Exception("No matching found")
+
+
 #     raise none exception?
 #     Note that this function return None for those times series range not in the query range
-def custom_query(query_sequences,query_range, cluster, k, time_series_dict):
+def custom_query(query_sequences, query_range, cluster, k, time_series_dict):
     """
 
     :param query_sequences: list of list: the list of sequences to be queried
@@ -81,9 +88,10 @@ def custom_query(query_sequences,query_range, cluster, k, time_series_dict):
     if isinstance(query_sequences[0], list):
         for cur_query in query_sequences:
             if isinstance(cur_query, list):
-                query_result[cur_query_number]:get_most_k_sim(cur_query, query_range, cluster, k, time_series_dict)
+                query_result[cur_query_number] = get_most_k_sim(cur_query, query_range, cluster, k, time_series_dict)
     else:
         return get_most_k_sim(query_sequences, query_range, cluster, k, time_series_dict)
+
 
 def get_most_k_sim(query_sequence, query_range, cluster, k, time_series_dict):
     min_rprs = None  # the representative that is closest to the query distance
@@ -113,9 +121,8 @@ def get_most_k_sim(query_sequence, query_range, cluster, k, time_series_dict):
         target_cluster.sort(key=lambda cluster_sequence: sim_between_seq(query_sequence,
                                                                          get_data_for_timeSeriesObj(cluster_sequence,
                                                                                                     time_series_dict)))
-
+        k = int(k)
         return target_cluster[0:k]  # return the k most similar sequences
-
 
 
 def get_query_sequence_from_file(file):
@@ -136,7 +143,109 @@ def get_query_sequence_from_file(file):
         return resList
 
 
-res = get_query_sequence_from_file(r'2013e_001_2_channels_02backs.csv')
-print(res[0])
-print(isinstance(res[0], list))
-print(type(res[0][0]))
+def query_operation(sc, normalized_ts_dict, time_series_dict, res_list, cluster_rdd, exclude_same_id, SAVED_DATASET_DIR,
+                    include_in_range, gp_project):
+    print("querying ")
+    global_dict = sc.broadcast(normalized_ts_dict)
+    # change naming here from time_series_dict to global_time_series_dict
+    # because it might cause problem when saving
+    global_time_series_dict = sc.broadcast(time_series_dict)
+    global_dict_rdd = sc.parallelize(res_list[1:],
+                                     numSlices=128)  # change the number of slices to mitigate larger datasets
+
+    grouping_range = (1, max([len(v) for v in global_dict.value.values()]))
+    # print("grouping_range" + str(grouping_range))
+    query_id = '(2013e_001)_(100-0-Back)_(A-DC4)_(232665953.1250)_(232695953.1250)'
+    query_sequence = get_data(query_id, 24, 117, global_time_series_dict.value)  # get an example query
+    print(len(query_sequence))
+    # cluster_rdd.collect()
+    # repartition(16).
+    # raise exception if the query_range exceeds the grouping range
+    # TODO after getting range and filtering, repartition!!
+    querying_range = (90, 91)
+    k = 5  # looking for k best matches
+    print("start query")
+    if querying_range[0] < grouping_range[0] or querying_range[1] > grouping_range[1]:
+        raise Exception("query_operations: query: Query range does not match group range")
+    filter_rdd = cluster_rdd.filter(lambda x: include_in_range(x, querying_range)).filter(
+        lambda x: exclude_same_id(x, query_id))
+
+    # clusters = cluster_rdd.collect()
+    # query_result = cluster_rdd.filter(lambda x: x).map(lambda clusters: query(query_sequence, querying_range, clusters, k, time_series_dict.value)).collect()
+    exclude_overlapping = True
+    path_to_save = SAVED_DATASET_DIR + os.sep + gp_project.get_project_name()
+    if os.path.isdir(path_to_save + '/filter/') and len(os.listdir(path_to_save + '/filter/')) != 0:
+        filter_rdd_back = sc.pickleFile(path_to_save + '/filter/')
+        # filter_res_back = filter_rdd_back.collect()
+        filter_res = filter_rdd.collect()
+        print("load back")
+    else:
+
+        filter_rdd.saveAsPickleFile(path_to_save + '/filter/')
+        # filter_res = filter_rdd.collect()
+        filter_rdd_back = sc.pickleFile(path_to_save + '/filter/')
+        print("first time of saving query")
+    query_result = filter_rdd_back.repartition(16).map(
+        lambda clusters: query(query_sequence, querying_range, clusters, k,
+                               global_time_series_dict.value,
+                               exclude_overlapping,
+                               0.5)).collect()
+    # changed here
+    # plot_query_result(query_sequence, query_result, global_time_series_dict.value)
+    return query_result
+
+def custom_query_operation(sc, normalized_ts_dict, time_series_dict, res_list, cluster_rdd, exclude_same_id, SAVED_DATASET_DIR,
+                    include_in_range, gp_project, querying_range, k, file):
+    print("custom querying ")
+    global_dict = sc.broadcast(normalized_ts_dict)
+    # change naming here from time_series_dict to global_time_series_dict
+    # because it might cause problem when saving
+    global_time_series_dict = sc.broadcast(time_series_dict)
+    global_dict_rdd = sc.parallelize(res_list[1:],
+                                     numSlices=128)  # change the number of slices to mitigate larger datasets
+
+    grouping_range = (1, max([len(v) for v in global_dict.value.values()]))
+    # print("grouping_range" + str(grouping_range))
+
+    # cluster_rdd.collect()
+    # repartition(16).
+    # raise exception if the query_range exceeds the grouping range
+    # TODO after getting range and filtering, repartition!!
+
+     # looking for k best matches
+    print("start query")
+    querying_range = list(map(int, querying_range))
+    if querying_range[0] < grouping_range[0] or querying_range[1] > grouping_range[1]:
+        raise Exception("query_operations: query: Query range does not match group range")
+    filter_rdd = cluster_rdd.filter(lambda x: include_in_range(x, querying_range))
+
+
+    path_to_save = SAVED_DATASET_DIR + os.sep + gp_project.get_project_name()
+    # todo
+    query_sequence = get_query_sequence_from_file(file)[0:2]
+    if os.path.isdir(path_to_save + '/custom_query/') and len(os.listdir(path_to_save + '/custom_query/')) != 0:
+        filter_rdd_back = sc.pickleFile(path_to_save + '/custom_query/')
+        # filter_res_back = filter_rdd_back.collect()
+        filter_res = filter_rdd.collect()
+        print("custom query load back")
+    else:
+
+        filter_rdd.saveAsPickleFile(path_to_save + '/custom_query/')
+        # filter_res = filter_rdd.collect()
+        filter_rdd_back = sc.pickleFile(path_to_save + '/custom_query/')
+        print("first time of saving query")
+    query_result = filter_rdd_back.repartition(16).map(
+        lambda clusters: custom_query(query_sequence, querying_range, clusters, k,
+                               global_time_series_dict.value,)).collect()
+    # changed here
+    # plot_query_result(query_sequence, query_result, global_time_series_dict.value)
+    return query_result
+
+# root = tk.Tk()
+# root.withdraw()
+# file_path = filedialog.askopenfilename()
+#
+# res = get_query_sequence_from_file(file_path)
+# print(res[0])
+# print(isinstance(res[0], list))
+# print(type(res[0][0]))

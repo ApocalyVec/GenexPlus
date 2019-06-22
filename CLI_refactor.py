@@ -47,7 +47,7 @@ from cluster_operations import cluster
 from data_operations import normalize_ts_with_min_max, get_data
 from filter_operation import exclude_same_id, include_in_range
 from group_operations import generate_source, get_subsquences
-from query_operations import query
+from query_operations import query, custom_query_operation, get_query_sequence_from_file
 from visualize_sequences import plot_query_result
 
 GPKeywords = ['load', 'group', 'cluster', 'query', 'plot', 'help', 'exit', 'open', 'set', 'delete']
@@ -177,6 +177,9 @@ res_list = None
 
 group_rdd = None
 cluster_rdd = None
+preprocessing_saved_status = False
+group_saved_status = False
+cluster_saved_status = False
 while 1:
 
     if gp_project is not None:
@@ -413,10 +416,11 @@ while 1:
                     # gp_project_file = open(gp_project_fn, "wb")
                     # pickle.dump(gp_project, gp_project_file)
                     print("preprocessing information saved to " + path_to_save + "/dict/")
+
                 if sc is None:
                     spark_context_not_set_error()
 
-                if group_rdd:
+                if group_rdd and not group_saved_status:
                     if os.path.isdir(path_to_save + '/group/'):
                         is_Update_group_infor = prompt(
                             "Project " + gp_project.get_project_name() + "r's group folder information exist, would you like to update ? [y/n]")
@@ -428,9 +432,11 @@ while 1:
                     else:
                         group_rdd.saveAspickleFile(path_to_save + '/group/')
                     print("group rdd information saved to " + path_to_save + '/group/')
-                else:
+                elif not group_rdd:
                     print("group not yet done")
-                if cluster_rdd:
+                elif group_saved_status:
+                    print("group already saved")
+                if cluster_rdd and not cluster_saved_status:
                     if os.path.isdir(path_to_save + '/cluster/'):
                         is_Update_cluster_infor = prompt(
                             "Project " + gp_project.get_project_name() + "r's cluster folder information exist, would you like to update ? [y/n]")
@@ -441,9 +447,10 @@ while 1:
                     else:
                         cluster_rdd.saveAspickleFile(path_to_save + '/cluster/')
                     print("cluster rdd information saved to " + path_to_save + '/cluster/')
-
-                else:
+                elif not cluster_rdd:
                     print("cluster not yet done")
+                elif cluster_saved_status:
+                    print("cluster already saved")
 
                 print("Saving process finished")
 
@@ -499,7 +506,9 @@ while 1:
                             group_rdd.saveAsPickleFile(path_to_save + '/group/')
                             # filter_res = filter_rdd.collect()
                             group_rdd = sc.pickleFile(path_to_save + '/group/')
-                            print("group first time")
+                            group_saved_status = True
+
+                            print("group first time and saved group information")
                         # group_rdd_res = group_rdd.collect()
 
                         # gp_project.set_group_data(group_rdd_res, (group_end_time - group_start_time))
@@ -542,13 +551,9 @@ while 1:
                         # cluster_rdd_collected = cluster_rdd.collect()
                         # first_dict = cluster_rdd_reload[0]
                         # gp_project.set_cluster_data(cluster_rdd)  # save cluster information to the projecty
-
-                            cluster_end_time = time.time()
                             cluster_rdd = group_rdd.map(lambda x: cluster(x[1], x[0], 0.1,
-                                                                      global_dict.value))  # TODO have the user decide the similarity threshold
+                                                                          global_dict.value))
 
-                            print('clustering of timeseries from ' + str(grouping_range[0]) + ' to ' + str(
-                            grouping_range[1]) + ' using ' + str(cluster_end_time - cluster_start_time) + ' seconds')
                         # TODO Question: why do we call cluster on the global_dict?
                             path_to_save = SAVED_DATASET_DIR + os.sep + gp_project.get_project_name()
 
@@ -557,15 +562,20 @@ while 1:
                                 # filter_res_back = filter_rdd_back.collect()
                                 # filter_res = cluster_rdd.collect()
                                 print("cluster load back")
-                            else:
+                            elif cluster_rdd:
 
                                 cluster_rdd.saveAsPickleFile(path_to_save + '/cluster/')
                                 # filter_res = filter_rdd.collect()
                                 cluster_rdd = sc.pickleFile(path_to_save + '/cluster/')
-                                print("cluster first time")
+                                cluster_saved_status = True
+                                print("cluster first time and saved group information")
 
                             # print("clustering done, saved to dataset")
+                            cluster_end_time = time.time()
+                            # TODO have the user decide the similarity threshold
 
+                            print('clustering of timeseries from ' + str(grouping_range[0]) + ' to ' + str(
+                                grouping_range[1]) + ' using ' + str(cluster_end_time - cluster_start_time) + ' seconds')
 
             elif args[0] == 'get':
                 if gp_project is None:
@@ -594,61 +604,26 @@ while 1:
                 #
                 # if args[1] == 'bf':
                 #
+                if len(args) != 5:
+                    print("query takes 5 parameters, query, query range start, query range end"
+                          "number of most similar time series(eg: 3), file of your query(.csv)")
                 if cluster_rdd is None:
                     no_cluster_before_query_error()
                 else:
-                    print("querying ")
-                    global_dict = sc.broadcast(normalized_ts_dict)
-                    # change naming here from time_series_dict to global_time_series_dict
-                    # because it might cause problem when saving
-                    global_time_series_dict = sc.broadcast(time_series_dict)
-                    global_dict_rdd = sc.parallelize(res_list[1:],
-                                                     numSlices=128)  # change the number of slices to mitigate larger datasets
-
-                    grouping_range = (1, max([len(v) for v in global_dict.value.values()]))
-                    # print("grouping_range" + str(grouping_range))
-                    query_id = '(2013e_001)_(100-0-Back)_(A-DC4)_(232665953.1250)_(232695953.1250)'
-                    query_sequence = get_data(query_id, 24, 117, global_time_series_dict.value)  # get an example query
-                    print(len(query_sequence))
-                    # cluster_rdd.collect()
-                    # repartition(16).
-                    # raise exception if the query_range exceeds the grouping range
-                    # TODO after getting range and filtering, repartition!!
-                    querying_range = (90, 91)
-                    k = 5  # looking for k best matches
-                    print("start query")
-                    if querying_range[0] < grouping_range[0] or querying_range[1] > grouping_range[1]:
-                        raise Exception("query_operations: query: Query range does not match group range")
-                    filter_rdd = cluster_rdd.filter(lambda x: include_in_range(x, querying_range)).filter(
-                        lambda x: exclude_same_id(x, query_id))
-
-                    # clusters = cluster_rdd.collect()
-                    # query_result = cluster_rdd.filter(lambda x: x).map(lambda clusters: query(query_sequence, querying_range, clusters, k, time_series_dict.value)).collect()
-                    exclude_overlapping = True
-                    path_to_save = SAVED_DATASET_DIR + os.sep + gp_project.get_project_name()
-                    if os.path.isdir(path_to_save + '/filter/') and len(os.listdir(path_to_save + '/filter/')) != 0:
-                        filter_rdd_back = sc.pickleFile(path_to_save + '/filter/')
-                        # filter_res_back = filter_rdd_back.collect()
-                        filter_res = filter_rdd.collect()
-                        print("load back")
-                    else:
-
-                        filter_rdd.saveAsPickleFile(path_to_save + '/filter/')
-                        # filter_res = filter_rdd.collect()
-                        filter_rdd_back = sc.pickleFile(path_to_save + '/filter/')
-                        print("first time")
-                    query_result = filter_rdd_back.repartition(16).map(
-                        lambda clusters: query(query_sequence, querying_range, clusters, k,
-                                               global_time_series_dict.value,
-                                               exclude_overlapping,
-                                               0.5)).collect()
-                    # changed here
-                    # plot_query_result(query_sequence, query_result, global_time_series_dict.value)
-
+                    querying_range = [None] * 2
+                    querying_range[0] = args[1]
+                    querying_range[1] = args[2]
+                    k = args[3]
+                    file = args[4]
+                    query_result = custom_query_operation(sc, normalized_ts_dict, time_series_dict, res_list, cluster_rdd,
+                                           exclude_same_id, SAVED_DATASET_DIR,
+                                           include_in_range, gp_project, querying_range, k, file)
             elif args[0] == 'plot':
                 if query_result is None:
                     no_query_result_before_plot()
                 else:
+                    global_time_series_dict = sc.broadcast(time_series_dict)
+                    query_sequence = get_query_sequence_from_file(file)[0]
                     plot_query_result(query_sequence, query_result, global_time_series_dict.value)
                     print("plot done")
 
