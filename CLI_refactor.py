@@ -26,6 +26,7 @@ something can be:
     log
 
 """
+import csv
 import os
 import shutil
 import time
@@ -618,6 +619,28 @@ while 1:
                     query_result = custom_query_operation(sc, normalized_ts_dict, time_series_dict, res_list, cluster_rdd,
                                            exclude_same_id, SAVED_DATASET_DIR,
                                            include_in_range, gp_project, querying_range, k, file)
+                    if query_result and isinstance(query_result, list):
+                        # with open('result_list' + gp_project.project_name + '.csv', 'w') as f:
+                        #     writer = csv.writer(f)
+                        #     writer.writerows(query_result)
+                        with open('result_list' + gp_project.project_name + '.pickle', 'wb') as handle:
+                            pickle.dump(query_result, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+                            print("query result save to: " + 'result_list' + gp_project.project_name + '.pickle')
+
+                    elif query_result and isinstance(query_result, dict):
+                        # with open('result_dict' + gp_project.project_name + '.csv', 'w') as f:  # Just use 'w' mode in 3.x
+                        #     w = csv.writer(f)
+                        #     for key, value in query_result.items():
+                        #
+                        #         for val in value:
+                        #             val = list(map(int, val))
+                        #             w.writerow([key, val])
+                        with open('result_dict' + gp_project.project_name + '.pickle', 'wb') as handle:
+                            pickle.dump(query_result, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+                            print("query result save to: " + 'result_dict' + gp_project.project_name + '.pickle')
+
             elif args[0] == 'plot':
                 if query_result is None:
                     no_query_result_before_plot()

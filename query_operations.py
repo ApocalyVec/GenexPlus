@@ -86,9 +86,12 @@ def custom_query(query_sequences, query_range, cluster, k, time_series_dict):
         raise ValueError("query sequence must be a list and not empty")
     cur_query_number = 0
     if isinstance(query_sequences[0], list):
+        print("length of query is [" + str(len(query_sequences)) + "]" + "[" + str(len(query_sequences[0])) + "]")
+        print("query is a list of list")
         for cur_query in query_sequences:
             if isinstance(cur_query, list):
                 query_result[cur_query_number] = get_most_k_sim(cur_query, query_range, cluster, k, time_series_dict)
+                return query_result
     else:
         return get_most_k_sim(query_sequences, query_range, cluster, k, time_series_dict)
 
@@ -194,8 +197,10 @@ def query_operation(sc, normalized_ts_dict, time_series_dict, res_list, cluster_
     # plot_query_result(query_sequence, query_result, global_time_series_dict.value)
     return query_result
 
-def custom_query_operation(sc, normalized_ts_dict, time_series_dict, res_list, cluster_rdd, exclude_same_id, SAVED_DATASET_DIR,
-                    include_in_range, gp_project, querying_range, k, file):
+
+def custom_query_operation(sc, normalized_ts_dict, time_series_dict, res_list, cluster_rdd, exclude_same_id,
+                           SAVED_DATASET_DIR,
+                           include_in_range, gp_project, querying_range, k, file):
     print("custom querying ")
     global_dict = sc.broadcast(normalized_ts_dict)
     # change naming here from time_series_dict to global_time_series_dict
@@ -212,13 +217,12 @@ def custom_query_operation(sc, normalized_ts_dict, time_series_dict, res_list, c
     # raise exception if the query_range exceeds the grouping range
     # TODO after getting range and filtering, repartition!!
 
-     # looking for k best matches
+    # looking for k best matches
     print("start query")
     querying_range = list(map(int, querying_range))
     if querying_range[0] < grouping_range[0] or querying_range[1] > grouping_range[1]:
         raise Exception("query_operations: query: Query range does not match group range")
     filter_rdd = cluster_rdd.filter(lambda x: include_in_range(x, querying_range))
-
 
     path_to_save = SAVED_DATASET_DIR + os.sep + gp_project.get_project_name()
     # todo
@@ -226,7 +230,7 @@ def custom_query_operation(sc, normalized_ts_dict, time_series_dict, res_list, c
     if os.path.isdir(path_to_save + '/custom_query/') and len(os.listdir(path_to_save + '/custom_query/')) != 0:
         filter_rdd_back = sc.pickleFile(path_to_save + '/custom_query/')
         # filter_res_back = filter_rdd_back.collect()
-        filter_res = filter_rdd.collect()
+        # filter_res = filter_rdd.collect()
         print("custom query load back")
     else:
 
@@ -236,7 +240,7 @@ def custom_query_operation(sc, normalized_ts_dict, time_series_dict, res_list, c
         print("first time of saving query")
     query_result = filter_rdd_back.repartition(16).map(
         lambda clusters: custom_query(query_sequence, querying_range, clusters, k,
-                               global_time_series_dict.value,)).collect()
+                                      global_time_series_dict.value, )).collect()
     # changed here
     # plot_query_result(query_sequence, query_result, global_time_series_dict.value)
     return query_result
