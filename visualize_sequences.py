@@ -45,3 +45,4 @@ def plot_query_result(query_sequence, query_result, time_series_dict):
                 plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 
             plt.show()
+
