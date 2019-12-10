@@ -67,21 +67,45 @@ def normalize_ts_dict(time_series_dict):
     # print("Global Min is " + str(global_min))
 
 
-def normalize_ts_with_min_max(time_series_dict, global_min, global_max):
+def normalize_ts_with_min_max_legacy(ts_dict, global_min, global_max):
     """
-
-    :param time_series_dict:
+    This function accepts diction as input and outputs a dictionary
+    :param ts_dict:
     :param min:
     :param max:
     """
     normalized_time_series = dict()
 
-    for ts_key in time_series_dict.keys():
+    for ts_key in ts_dict.keys():
         normalized_time_series[ts_key] = []
-        for point in time_series_dict[ts_key]:
+        for point in ts_dict[ts_key]:
             normalized_time_series[ts_key].append((point - global_min) / (global_max - global_min))
 
     return normalized_time_series
+
+
+def normalize_ts_with_min_max(ts_list, global_min, global_max):
+    """
+    This function accepts LIST as input and outputs a LIST
+
+    :param time_series_dict:
+    :param min:
+    :param max:
+    """
+    norm_ts_list = []
+
+    for id_data in ts_list:
+        if len(id_data) != 2:
+            raise Exception('data_operations: normalize_ts_with_min_max: Invalid ts_list, not 2 elements per entry; Invalid Entry = ' + id_data)
+        id = id_data[0]
+        data = id_data[1]
+
+        normalized_data = []
+        for point in data:
+            normalized_data.append((point - global_min) / (global_max - global_min))
+        norm_ts_list.append([id, normalized_data])
+
+    return norm_ts_list
 
 
 def find_k_smallest(target_cluster, query_sequence, k):

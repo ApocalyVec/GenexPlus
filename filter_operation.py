@@ -52,3 +52,17 @@ def overlapping_percentage(start_end_points, ts_object):
     percentage = range / (start_end_points[1] - start_end_points[0])
 
     return percentage
+
+def include_in_range(cluster, query_range):
+    target_cluster = []
+    for cur_rprs in cluster.keys():
+        # print("actually querying")
+        # print('end point is' + str(cur_rprs.end_point))
+        # print('start point is' + str(cur_rprs.start_point))
+        # TODO do we want to get raw data here, or set the raw in timeSeriesObj before calling query (no parsing)
+        if (cur_rprs.end_point - cur_rprs.start_point) in range(query_range[0], query_range[1] + 1):
+            # print("it's in")
+            target_cluster.append(cur_rprs)
+        else:
+            continue
+    return target_cluster

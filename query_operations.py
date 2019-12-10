@@ -20,6 +20,7 @@ def query(query_sequence, query_range, cluster, k, time_series_dict, exclude_ove
     min_dist = math.inf
     target_cluster = []
     for cur_rprs in cluster.keys():
+        # print("actually querying")
         # print('end point is' + str(cur_rprs.end_point))
         # print('start point is' + str(cur_rprs.start_point))
         # TODO do we want to get raw data here, or set the raw in timeSeriesObj before calling query (no parsing)
@@ -42,8 +43,7 @@ def query(query_sequence, query_range, cluster, k, time_series_dict, exclude_ove
         print("sorting")
 
         # this sorting is taking a long time!
-        target_cluster.sort(key=lambda cluster_sequence: sim_between_seq
-        (query_sequence, get_data_for_timeSeriesObj(cluster_sequence, time_series_dict)))
+        target_cluster.sort(key=lambda cluster_sequence: sim_between_seq(query_sequence, get_data_for_timeSeriesObj(cluster_sequence, time_series_dict)))
     #     use a heap?
     #     use quickselect
     #     similar question to k closet point to origin
